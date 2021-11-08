@@ -18,14 +18,20 @@ library(RcppRoll)
 # Load data ---- 
 
 # Case data files
-dat_nsw <- read_csv(file = here("data/confirmed_cases_table1_location.csv"))   # https://data.nsw.gov.au/search/dataset/ds-nsw-ckan-aefcde60-3b0c-4bc0-9af1-6fe652944ec2/details?q=
-dat_nz <- read_csv(file = here("data/covid_cases_2021-11-08.csv")) |>   # https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
+# https://data.nsw.gov.au/search/dataset/ds-nsw-ckan-aefcde60-3b0c-4bc0-9af1-6fe652944ec2/details?q=
+dat_nsw <- read_csv(file = here("data/confirmed_cases_table1_location.csv"))   
+
+# https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
+dat_nz <- read_csv(file = here("data/covid_cases_2021-11-08.csv")) |>   
   clean_names()
-dat_vic <- read_csv(file = here("data/ncov-covid-cases-by-lga-csv.csv")) |>   # https://www.coronavirus.vic.gov.au/victorian-coronavirus-covid-19-data
+
+# https://www.coronavirus.vic.gov.au/victorian-coronavirus-covid-19-data
+dat_vic <- read_csv(file = here("data/ncov-covid-cases-by-lga-csv.csv")) |>   
   clean_names()
 
 # NZ vax rate (fully vax of total population)
-dat_nz_vax <- read_excel(path = here("data/nz_vax_by_date.xlsx")) |>   # https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-vaccine-data
+# https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-vaccine-data
+dat_nz_vax <- read_excel(path = here("data/nz_vax_by_date.xlsx")) |>   
   clean_names() |> 
   mutate(date = as_date(date)) |> 
   mutate(fully_vax_people = cumsum(second_dose_administered)) |> 
@@ -35,7 +41,8 @@ dat_nz_vax <- read_excel(path = here("data/nz_vax_by_date.xlsx")) |>   # https:/
          delta_level3_day = as.integer(date - ymd("2021-09-22")))
 
 # NSW vax rate (fully vax of total population)
-dat_nsw_vax <- read_excel(path = here("data/nsw_second_doses.xlsx")) |>    # https://covidlive.com.au/report/daily-vaccinations-people/nsw
+# https://covidlive.com.au/report/daily-vaccinations-people/nsw
+dat_nsw_vax <- read_excel(path = here("data/nsw_second_doses.xlsx")) |>    
   clean_names() |> 
   mutate(date = as_date(date)) |> 
   arrange(date) |> 
@@ -43,7 +50,8 @@ dat_nsw_vax <- read_excel(path = here("data/nsw_second_doses.xlsx")) |>    # htt
   mutate(outbreak_day = as.integer(date - ymd("2021-06-16"))) 
 
 # VIC vax rate (fully vax of total population)
-dat_vic_vax <- read_excel(path = here("data/vic_second_doses.xlsx")) |>    # https://covidlive.com.au/report/daily-vaccinations-people/vic
+# https://covidlive.com.au/report/daily-vaccinations-people/vic
+dat_vic_vax <- read_excel(path = here("data/vic_second_doses.xlsx")) |>    
   clean_names() |> 
   mutate(date = as_date(date)) |> 
   arrange(date) |> 
@@ -131,7 +139,7 @@ chart_outbreak_day <- chart_outbreak_day_dat |>
   ggplot(mapping = aes(x = outbreak_day, 
                        y = n, 
                        colour = area)) + 
-  geom_line(size = 1.25) + 
+  geom_line(size = 0.75) + 
   xlab("Outbreak day") + 
   ylab("Daily number of\ncases reported") + 
   ggtitle(label = "Delta outbreak daily cases") + 
@@ -170,7 +178,7 @@ chart_outbreak_day_mean_log <- chart_outbreak_day_dat |>
   ggplot(mapping = aes(x = outbreak_day, 
                        y = mean_n, 
                        colour = area)) + 
-  geom_line(size = 1.25) + 
+  geom_line(size = 0.75) + 
   xlab("Outbreak day") + 
   ylab("Daily number of\ncases reported\n(log scale)") + 
   ggtitle(label = "Delta outbreak daily cases: 5-day moving average (log scale)") + 
@@ -215,9 +223,9 @@ chart_outbreak_day_vax <- chart_outbreak_day_dat |>
   ylab("Daily number of\ncases reported") + 
   ggtitle(label = "Delta outbreak daily cases vs vaccination rate") + 
   annotate(geom = "text", 
-           x = 0.05, 
+           x = 0.03, 
            y = 1700, 
-           label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au\ngithub.com/aaronschiff/nz-covid", 
+           label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au, covidlive.com.au\ngithub.com/aaronschiff/nz-covid", 
            hjust = 0, 
            family = "Fira Sans", 
            size = 2) + 
@@ -234,9 +242,9 @@ chart_outbreak_day_vax <- chart_outbreak_day_dat |>
         panel.grid.major = element_line(size = 0.2), 
         axis.title.y = element_text(angle = 0, hjust = 0, margin = margin(0, 8, 0, 0, "pt")), 
         axis.title.x = element_text(margin = margin(8, 0, 0, 0, "pt")), 
-        legend.position = c(0.26, 0.9))
+        legend.position = c(0.235, 0.9))
 
-ggsave(filename = here("outputs/nz-vs-au/nz_vs_nsw_vic_2_with_vax.png"), 
+ggsave(filename = here("outputs/nz-vs-au/nz_vs_nsw_vic_by_vax_rate.png"), 
        plot = chart_outbreak_day_vax, 
        width = 2400, 
        height = 1600, 
