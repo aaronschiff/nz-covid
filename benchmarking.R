@@ -1,5 +1,18 @@
 # International benchmarking of COVID-19 outcomes
 
+# TODO: 
+# Colour by country groupings [done]
+# Add Taiwan [done]
+# Check out of ranges [done]
+# Adjust spacing
+# Key for country codes
+# Byline and data source [done]
+# Lighten numeric scale colour, fix gridlines colour [done]
+# Add back tests indicator [done]
+# Remove govt response stringency entire pandemic [done]
+# Adjust colours to have more contrast for NZ
+# Adjust vax rate to be latest available [done]
+# Move up totals to under 14 day averages
 
 # *****************************************************************************
 # Setup ----
@@ -13,6 +26,7 @@ library(scales)
 library(httr)
 library(ggrepel)
 library(colorspace)
+library(ggbeeswarm)
 library(ggh4x)      # devtools::install_github("teunbrand/ggh4x")
 
 
@@ -30,16 +44,6 @@ writeBin(object = content_owd,
 rm(dat_owd_raw, content_owd)
 dat_owd <- read_csv(file = here("data/coronavirus-data-explorer.csv"))
 
-# World Bank population in 2020
-dat_pop <- read_csv(file = here("data/API_SP.POP.TOTL_DS2_en_csv_v2_3011530/API_SP.POP.TOTL_DS2_en_csv_v2_3011530.csv"), 
-                    skip = 3) |> 
-  pivot_longer(cols = 5:last_col(), names_to = "year", values_to = "pop") |> 
-  mutate(year = as.integer(year)) |> 
-  filter(!is.na(year), !is.na(pop)) |> 
-  filter(year == 2020) |> 
-  clean_names() |> 
-  select(-indicator_name, -indicator_code, -year)
-
 # *****************************************************************************
 
 
@@ -48,51 +52,56 @@ dat_pop <- read_csv(file = here("data/API_SP.POP.TOTL_DS2_en_csv_v2_3011530/API_
 
 # Select benchmarking countries (names may differ in different datasets)
 dat_countries <- tribble(
-  ~owd_country, ~wb_country, ~country_abbr, 
-  "Australia", "Australia", "AU", 
-  "Austria", "Austria", "AT", 
-  "Belgium", "Belgium", "BE", 
-  "Canada", "Canada", "CA", 
-  "Denmark", "Denmark", "DK", 
-  "Finland", "Finland", "FI", 
-  "France", "France", "FR", 
-  "Germany", "Germany", "DE", 
-  "Ireland", "Ireland", "IE", 
-  "Italy", "Italy", "IT", 
-  "Japan", "Japan", "JP", 
-  "Netherlands", "Netherlands", "NL", 
-  "New Zealand", "New Zealand", "NZ", 
-  "Norway", "Norway", "NO", 
-  "Singapore", "Singapore", "SG", 
-  "South Korea", "Korea, Rep.", "KR", 
-  "Spain", "Spain", "ES", 
-  "Sweden", "Sweden", "SE",
-  "Switzerland", "Switzerland", "CH", 
-  "United Kingdom", "United Kingdom", "UK", 
-  "United States", "United States", "US"
+  ~owd_country, ~country_abbr, ~country_area, 
+  "Australia", "AU", "Australasia",
+  "Austria", "AT", "Europe", 
+  "Belgium", "BE", "Europe", 
+  "Canada", "CA", "Americas", 
+  "Denmark", "DK", "Europe", 
+  "Finland", "FI", "Europe", 
+  "France", "FR", "Europe", 
+  "Germany", "DE", "Europe", 
+  "Ireland", "IE", "Europe", 
+  "Italy", "IT", "Europe", 
+  "Japan", "JP", "Australasia", 
+  "Netherlands", "NL", "Europe", 
+  "New Zealand", "NZ", "New Zealand", 
+  "Norway", "NO", "Europe", 
+  "Singapore", "SG", "Australasia", 
+  "South Korea", "KR", "Australasia", 
+  "Spain", "ES", "Europe", 
+  "Sweden", "SE", "Europe", 
+  "Switzerland", "CH", "Europe", 
+  "Taiwan", "TW", "Australasia", 
+  "United Kingdom", "UK", "Europe", 
+  "United States", "US", "Americas"
 )
 
 # Benchmarking data for past 14 days
 dat_bench_14days <- dat_countries |> 
   left_join(y = dat_owd |> 
               select(location, date, 
-                     new_cases, new_deaths, new_tests_smoothed, 
+                     new_cases, new_deaths, new_tests_smoothed, hosp_patients, 
                      people_fully_vaccinated, 
-                     stringency_index), 
+                     stringency_index, 
+                     population), 
             by = c("owd_country" = "location")) |> 
   # Weekly summary for last 2 weeks of OWD data
   filter(date > max(dat_owd$date) - days(14)) |> 
-  group_by(owd_country, wb_country, country_abbr) |> 
+  arrange(owd_country, date) |> 
+  group_by(owd_country, country_abbr, country_area) |> 
   summarise(total_cases = sum(new_cases, na.rm = TRUE), 
             total_tests = sum(new_tests_smoothed, na.rm = TRUE), 
             total_deaths = sum(new_deaths, na.rm = TRUE), 
-            mean_vax = mean(people_fully_vaccinated, na.rm = TRUE), 
-            mean_stringency = mean(stringency_index, na.rm = TRUE)) |> 
-  left_join(y = dat_pop, by = c("wb_country" = "country_name")) |> 
-  mutate(mean_daily_new_cases_per_5m = total_cases / (pop / 5000000) / 14, 
-         mean_daily_new_tests_per_5m = total_tests / (pop / 5000000) / 14, 
-         mean_daily_new_deaths_per_5m = total_deaths / (pop / 5000000) / 14, 
-         mean_vax_rate = 100 * mean_vax / pop, 
+            mean_hosp = mean(hosp_patients, na.rm = TRUE), 
+            max_vax = max(people_fully_vaccinated, na.rm = TRUE), 
+            mean_stringency = mean(stringency_index, na.rm = TRUE), 
+            population = mean(population, na.rm = TRUE)) |> 
+  mutate(mean_daily_new_cases_per_5m = total_cases / (population / 5000000) / 14, 
+         mean_daily_new_tests_per_5m = total_tests / (population / 5000000) / 14, 
+         mean_daily_new_deaths_per_5m = total_deaths / (population / 5000000) / 14, 
+         mean_hosp_per_5m = mean_hosp / (population / 5000000), 
+         max_vax_rate = 100 * max_vax / population, 
          mean_stringency = mean(mean_stringency)) |> 
   ungroup() |> 
   mutate(country_group = case_when(
@@ -105,15 +114,16 @@ dat_bench_pandemic <- dat_countries |>
   left_join(y = dat_owd |> 
               select(location, date, 
                      new_cases, new_deaths,
-                     stringency_index), 
+                     stringency_index, 
+                     population), 
             by = c("owd_country" = "location")) |> 
-  group_by(owd_country, wb_country, country_abbr) |> 
+  group_by(owd_country, country_abbr, country_area) |> 
   summarise(total_cases = sum(new_cases, na.rm = TRUE), 
             total_deaths = sum(new_deaths, na.rm = TRUE), 
-            mean_stringency_overall = mean(stringency_index, na.rm = TRUE)) |> 
-  left_join(y = dat_pop, by = c("wb_country" = "country_name")) |> 
-  mutate(mean_total_cases_per_5m = total_cases / (pop / 5000000), 
-         mean_total_deaths_per_5m = total_deaths / (pop / 5000000)) |> 
+            mean_stringency_overall = mean(stringency_index, na.rm = TRUE), 
+            population = mean(population, na.rm = TRUE)) |> 
+  mutate(mean_total_cases_per_5m = total_cases / (population / 5000000), 
+         mean_total_deaths_per_5m = total_deaths / (population / 5000000)) |> 
   ungroup() |> 
   mutate(country_group = case_when(
     owd_country == "New Zealand" ~ "nz", 
@@ -129,6 +139,19 @@ dat_bench_pandemic <- dat_countries |>
 # Date for chart title
 last_date <- strftime(max(dat_owd$date), format = "%d %B %Y")
 
+# Measure metadata
+measures <- tribble(
+  ~measure_level, ~measure_label, 
+  "mean_daily_new_cases_per_5m", "Average daily cases per 5 million people (14-day average)",
+  "mean_total_cases_per_5m", "Total cases per 5 million people for the entire pandemic",
+  "mean_daily_new_deaths_per_5m", "Average daily deaths per 5 million people (14-day average)",
+  "mean_total_deaths_per_5m", "Total deaths per 5 million people for the entire pandemic",
+  "mean_daily_new_tests_per_5m", "Average daily tests per 5 million people (14-day average)",
+  "mean_hosp_per_5m", "Average number in hospital per 5 million people (14-day average; NZ data not available)",
+  "max_vax_rate", "Fully vaccinated proportion of the total population (most recent data)",
+  "mean_stringency", "Average government response stringency index (14-day average)"
+)
+
 # Chart data
 dat_chart <- bind_rows(
   # Past 14 days
@@ -136,12 +159,14 @@ dat_chart <- bind_rows(
     select(owd_country, 
            country_group, 
            country_abbr, 
+           country_area, 
            mean_daily_new_cases_per_5m, 
            mean_daily_new_deaths_per_5m, 
            mean_daily_new_tests_per_5m, 
-           mean_vax_rate, 
+           mean_hosp_per_5m, 
+           max_vax_rate, 
            mean_stringency) |> 
-    pivot_longer(cols = c(-owd_country, -country_group, -country_abbr), 
+    pivot_longer(cols = c(-owd_country, -country_group, -country_abbr, -country_area), 
                  names_to = "measure", values_to = "value"), 
   
   # Entire pandemic
@@ -149,101 +174,128 @@ dat_chart <- bind_rows(
     select(owd_country, 
            country_group, 
            country_abbr, 
+           country_area, 
            mean_total_cases_per_5m, 
-           mean_total_deaths_per_5m, 
-           mean_stringency_overall) |> 
-    pivot_longer(cols = c(-owd_country, -country_group, -country_abbr), 
+           mean_total_deaths_per_5m) |> 
+    pivot_longer(cols = c(-owd_country, -country_group, -country_abbr, -country_area), 
                  names_to = "measure", values_to = "value")
 ) |> 
   mutate(measure = factor(x = measure, 
-                          levels = c("mean_daily_new_cases_per_5m", 
-                                     "mean_total_cases_per_5m", 
-                                     "mean_daily_new_deaths_per_5m", 
-                                     "mean_total_deaths_per_5m", 
-                                     "mean_daily_new_tests_per_5m", 
-                                     "mean_vax_rate", 
-                                     "mean_stringency", 
-                                     "mean_stringency_overall"), 
-                          labels = c("Average daily cases per 5 million people in the past 14 days", 
-                                     "Total cases per 5 million people for the entire pandemic", 
-                                     "Average daily deaths per 5 million people in the past 14 days", 
-                                     "Total deaths per 5 million people for the entire pandemic", 
-                                     "Average daily tests per 5 million people in the past 14 days", 
-                                     "Average fully vaccinated proportion of the total population over the past 14 days", 
-                                     "Average government response stringency index in the past 14 days", 
-                                     "Average government response stringency index for the entire pandemic"), 
-                          ordered = TRUE))
+                          levels = measures$measure_level, 
+                          labels = measures$measure_label, 
+                          ordered = TRUE)) |> 
+  mutate(country_area = factor(x = country_area, 
+                               levels = c("New Zealand", 
+                                          "Australasia", 
+                                          "Europe", 
+                                          "Americas"), 
+                               ordered = TRUE)) |> 
+  arrange(measure, fct_rev(country_area), owd_country)
+
+# Max values for scales
+scale_max_val <- function(d, m, u) { 
+  y <- ceiling(
+    d |> 
+      filter(measure == m) |> 
+      pull(value) |> 
+      max(na.rm = TRUE) / u
+  ) * u + u/4
+  return(round(y))
+}
+max_mean_daily_new_cases_per_5m <- scale_max_val(d = dat_chart, 
+                                                 m = measures$measure_label[1], 
+                                                 u = 250)
+
+max_mean_total_cases_per_5m <- scale_max_val(d = dat_chart, 
+                                             m = measures$measure_label[2], 
+                                             u = 50000)
+
+max_mean_daily_new_deaths_per_5m <- scale_max_val(d = dat_chart, 
+                                                  m = measures$measure_label[3], 
+                                                  u = 1)
+
+max_mean_total_deaths_per_5m <- scale_max_val(d = dat_chart,
+                                              m = measures$measure_label[4], 
+                                              u = 1000)
+
+max_mean_daily_new_tests_per_5m <- scale_max_val(d = dat_chart,
+                                                 m = measures$measure_label[5],
+                                                 u = 20000)
+
+max_mean_hosp_per_5m <- scale_max_val(d = dat_chart, 
+                                      m = measures$measure_label[6], 
+                                      u = 100)
+
+max_max_vax_rate <- 101
+
+max_mean_stringency <- 101
 
 chart <- dat_chart |> 
-  ggplot(mapping = aes(y = 1, 
-                       x = value, 
-                       fill = country_group, 
-                       colour = country_group, 
+  ggplot(mapping = aes(x = "1", 
+                       y = value, 
+                       fill = country_area, 
                        label = country_abbr)) + 
-  geom_point(data = dat_chart |> filter(country_group == "other"), 
-             shape = 21, 
-             colour = "white", 
-             size = 1.75, 
-             stroke = 0.25) + 
-  geom_point(data = dat_chart |> filter(country_group == "nz"), 
-             shape = 21, 
-             colour = "white", 
-             size = 1.75, 
-             stroke = 0.25) + 
-  geom_text_repel(size = 1.75, 
-                  segment.size = 0.2, 
-                  min.segment.length = 0.25, 
-                  direction = "y", 
-                  ylim = c(0.95, 1.05), 
-                  max.overlaps = 20) + 
+  geom_quasirandom(shape = 21, 
+                   stroke = 0.5, 
+                   size = 4, 
+                   colour = grey(0.9), 
+                   bandwidth = 7) + 
+  coord_flip() + 
+  geom_text(position = position_quasirandom(bandwidth = 7), 
+            colour = "white", 
+            fontface = "bold", 
+            size = 1.6) + 
   facet_wrap(facets = vars(measure), 
-             scales = "free_x", 
+             scales = "free", 
              ncol = 1) + 
-  scale_y_continuous(limits = c(0.95, 1.05), 
-                     expand = expansion(0, 0)) + 
-  facetted_pos_scales(x = list(
-    scale_x_continuous(breaks = seq(0, 3500, 250), 
-                       limits = c(0, 3300), 
+  #scale_x_continuous(expand = expansion(0.1, 0)) +
+  facetted_pos_scales(y = list(
+    scale_y_continuous(breaks = seq(0, max_mean_daily_new_cases_per_5m, 250),
+                       limits = c(-50, max_mean_daily_new_cases_per_5m),
+                       labels = comma_format(accuracy = 1),
+                       expand = expansion(0, 0),
+                       position = "right"),
+    scale_y_continuous(breaks = seq(0, max_mean_total_cases_per_5m, 100000),
+                       limits = c(-5000, max_mean_total_cases_per_5m),
+                       labels = comma_format(accuracy = 1),
+                       expand = expansion(0, 0),
+                       position = "right"), 
+    scale_y_continuous(breaks = seq(0, max_mean_daily_new_deaths_per_5m, 1),
+                       limits = c(-0.25, max_mean_daily_new_deaths_per_5m),
+                       expand = expansion(0, 0),
+                       position = "right"),
+    scale_y_continuous(breaks = seq(0, max_mean_total_deaths_per_5m, 1000),
+                       limits = c(-100, max_mean_total_deaths_per_5m),
+                       expand = expansion(0, 0),
+                       labels = comma_format(accuracy = 1),
+                       position = "right"),
+    scale_y_continuous(breaks = seq(0, max_mean_daily_new_tests_per_5m, 20000), 
+                       limits = c(-2000, max_mean_daily_new_tests_per_5m), 
                        labels = comma_format(accuracy = 1), 
                        expand = expansion(0, 0), 
-                       position = "top"), 
-    scale_x_continuous(breaks = seq(0, 700000, 100000), 
-                       limits = c(0, 720000), 
-                       labels = comma_format(accuracy = 1), 
-                       expand = expansion(0, 0), 
-                       position = "top"), 
-    scale_x_continuous(breaks = seq(0, 26, 2), 
-                       limits = c(-0.1, 23), 
-                       expand = expansion(0, 0), 
-                       position = "top"), 
-    scale_x_continuous(breaks = seq(0, 12000, 1000), 
-                       limits = c(-100, 12500), 
-                       expand = expansion(0, 0), 
-                       labels = comma_format(accuracy = 1), 
-                       position = "top"), 
-    scale_x_continuous(breaks = seq(0, 200000, 20000), 
-                       limits = c(0, 145000), 
-                       labels = comma_format(accuracy = 1), 
-                       expand = expansion(0, 0), 
-                       position = "top"), 
-    scale_x_continuous(breaks = seq(50, 100, 5), 
-                       limits = c(49, 101), 
-                       expand = expansion(0, 0), 
-                       position = "top"), 
-    scale_x_continuous(breaks = seq(0, 100, 10), 
-                       limits = c(0, 101), 
-                       expand = expansion(0, 0), 
-                       position = "top"), 
-    scale_x_continuous(breaks = seq(0, 100, 10), 
-                       limits = c(0, 101), 
-                       expand = expansion(0, 0), 
-                       position = "top")
-  )) + 
-  scale_fill_manual(values = c("nz" = "red", 
-                               "other" = grey(0.1)), 
-                    guide = "none", 
-                    aesthetics = c("colour", "fill")) + 
-  ggtitle(glue("COVID-19 benchmarks from selected countries for {last_date}")) + 
+                       position = "right"), 
+    scale_y_continuous(breaks = seq(0, max_mean_hosp_per_5m, 100),
+                       limits = c(0, max_mean_hosp_per_5m),
+                       labels = comma_format(accuracy = 1),
+                       expand = expansion(0, 0),
+                       position = "right"),
+    scale_y_continuous(breaks = seq(0, max_max_vax_rate, 5),
+                       limits = c(0, max_max_vax_rate),
+                       expand = expansion(0, 0),
+                       position = "right"),
+    scale_y_continuous(breaks = seq(0, max_mean_stringency, 10),
+                       limits = c(0, max_mean_stringency),
+                       expand = expansion(0, 0),
+                       position = "right")
+  )) +
+  scale_fill_manual(values = c("New Zealand" = "#6929c4", 
+                               "Australasia" = "#33b1ff", 
+                               "Europe" = "#007d79", 
+                               "Americas" = "#ff7eb6"),
+                    name = NULL, 
+                    aesthetics = c("colour", "fill")) +
+  ggtitle(label = glue("COVID-19 benchmarks from selected countries for {last_date}"), 
+          subtitle = "Chart by Aaron Schiff with data from Our World in Data (github.com/aaronschiff/nz-covid)") + 
   theme_minimal(base_family = "Fira Sans") + 
   theme(panel.grid.minor = element_blank(), 
         panel.grid.major.y = element_blank(), 
@@ -251,10 +303,13 @@ chart <- dat_chart |>
                                           colour = darken(col = "lightskyblue3", 
                                                           amount = 0.1)), 
         axis.text.y = element_blank(), 
+        axis.text.x = element_text(colour = grey(0.6)), 
         axis.title = element_blank(),
         plot.title = element_text(size = rel(1.2), face = "bold", 
-                                  margin = margin(0, 0, 8, 0, "pt"), 
-                                  colour = "royalblue"), 
+                                  margin = margin(0, 0, 4, 0, "pt")), 
+        plot.subtitle = element_text(size = rel(0.8), 
+                                     margin = margin(0, 0, 0, 0, "pt")), 
+        legend.margin = margin(8, 0, 24, 0, "pt"), 
         panel.background = element_rect(fill = lighten(col = "lightskyblue3", 
                                                        amount = 0.2), 
                                         size = 0), 
@@ -262,14 +317,16 @@ chart <- dat_chart |>
                                   face = "bold", 
                                   margin = margin(0, 0, 2, -0.25, "pt")), 
         strip.placement = "outside", 
-        panel.spacing = unit(20, "pt"))
+        panel.spacing = unit(20, "pt"), 
+        legend.position = "top", 
+        legend.direction = "horizontal")
 
 ggsave(filename = here(glue("outputs/benchmarking-{last_date}.png")), 
        plot = chart, 
        width = 2000, 
-       height = 2600, 
+       height = 3200, 
        units = "px", 
        device = "png", 
        bg = "white")
 
-  # *****************************************************************************
+# *****************************************************************************
