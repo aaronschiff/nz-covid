@@ -1,19 +1,5 @@
 # International benchmarking of COVID-19 outcomes
 
-# TODO: 
-# Colour by country groupings [done]
-# Add Taiwan [done]
-# Check out of ranges [done]
-# Adjust spacing
-# Key for country codes
-# Byline and data source [done]
-# Lighten numeric scale colour, fix gridlines colour [done]
-# Add back tests indicator [done]
-# Remove govt response stringency entire pandemic [done]
-# Adjust colours to have more contrast for NZ
-# Adjust vax rate to be latest available [done]
-# Move up totals to under 14 day averages
-
 # *****************************************************************************
 # Setup ----
 
@@ -28,7 +14,7 @@ library(ggrepel)
 library(colorspace)
 library(ggbeeswarm)
 library(ggh4x)      # devtools::install_github("teunbrand/ggh4x")
-
+library(ggtext)
 
 # *****************************************************************************
 
@@ -76,6 +62,28 @@ dat_countries <- tribble(
   "United Kingdom", "UK", "Europe", 
   "United States", "US", "Americas"
 )
+
+# Assemble text for country key at bottom of chart
+i <- 1L
+j <- 1L
+dat_countries_key <- ""
+while (i <= nrow(dat_countries)) {
+  dat_countries_key <- paste0(dat_countries_key, 
+                              "**", 
+                              dat_countries$country_abbr[i], 
+                              "**: ", 
+                              dat_countries$owd_country[i])
+  if (j == 8L) {
+    dat_countries_key <- paste0(dat_countries_key, "<br>")
+    j <- 1L
+  } else {
+    if (i < nrow(dat_countries)) {
+      dat_countries_key <- paste0(dat_countries_key, ", ")
+    }
+    j <- j + 1L
+  }
+  i <- i + 1L
+}
 
 # Benchmarking data for past 14 days
 dat_bench_14days <- dat_countries |> 
@@ -204,7 +212,7 @@ scale_max_val <- function(d, m, u) {
 }
 max_mean_daily_new_cases_per_5m <- scale_max_val(d = dat_chart, 
                                                  m = measures$measure_label[1], 
-                                                 u = 250)
+                                                 u = 500)
 
 max_mean_total_cases_per_5m <- scale_max_val(d = dat_chart, 
                                              m = measures$measure_label[2], 
@@ -212,7 +220,7 @@ max_mean_total_cases_per_5m <- scale_max_val(d = dat_chart,
 
 max_mean_daily_new_deaths_per_5m <- scale_max_val(d = dat_chart, 
                                                   m = measures$measure_label[3], 
-                                                  u = 1)
+                                                  u = 1) + 0.25
 
 max_mean_total_deaths_per_5m <- scale_max_val(d = dat_chart,
                                               m = measures$measure_label[4], 
@@ -230,6 +238,7 @@ max_max_vax_rate <- 101
 
 max_mean_stringency <- 101
 
+# Chart code
 chart <- dat_chart |> 
   ggplot(mapping = aes(x = "1", 
                        y = value, 
@@ -239,18 +248,19 @@ chart <- dat_chart |>
                    stroke = 0.5, 
                    size = 4, 
                    colour = grey(0.9), 
-                   bandwidth = 7) + 
-  coord_flip() + 
-  geom_text(position = position_quasirandom(bandwidth = 7), 
+                   bandwidth = 10, 
+                   method = "quasirandom") + 
+  geom_text(position = position_quasirandom(bandwidth = 10, 
+                                            method = "quasirandom"), 
             colour = "white", 
             fontface = "bold", 
             size = 1.6) + 
+  coord_flip() + 
   facet_wrap(facets = vars(measure), 
              scales = "free", 
              ncol = 1) + 
-  #scale_x_continuous(expand = expansion(0.1, 0)) +
   facetted_pos_scales(y = list(
-    scale_y_continuous(breaks = seq(0, max_mean_daily_new_cases_per_5m, 250),
+    scale_y_continuous(breaks = seq(0, max_mean_daily_new_cases_per_5m, 500),
                        limits = c(-50, max_mean_daily_new_cases_per_5m),
                        labels = comma_format(accuracy = 1),
                        expand = expansion(0, 0),
@@ -289,29 +299,35 @@ chart <- dat_chart |>
                        position = "right")
   )) +
   scale_fill_manual(values = c("New Zealand" = "#6929c4", 
-                               "Australasia" = "#33b1ff", 
-                               "Europe" = "#007d79", 
-                               "Americas" = "#ff7eb6"),
+                               "Australasia" = lighten(col = "#33b1ff", amount = 0.2), 
+                               "Europe" = lighten(col = "#007d79", amount = 0.3), 
+                               "Americas" = lighten(col = "#ff7eb6", amount = 0.2)),
                     name = NULL, 
                     aesthetics = c("colour", "fill")) +
-  ggtitle(label = glue("COVID-19 benchmarks from selected countries for {last_date}"), 
-          subtitle = "Chart by Aaron Schiff with data from Our World in Data (github.com/aaronschiff/nz-covid)") + 
+  labs(title = glue("COVID-19 benchmarks from selected countries for {last_date}"), 
+       subtitle = "Chart by Aaron Schiff with data from Our World in Data (github.com/aaronschiff/nz-covid)", 
+       caption = dat_countries_key) + 
   theme_minimal(base_family = "Fira Sans") + 
   theme(panel.grid.minor = element_blank(), 
         panel.grid.major.y = element_blank(), 
         panel.grid.major.x = element_line(size = 0.2, 
                                           colour = darken(col = "lightskyblue3", 
-                                                          amount = 0.1)), 
+                                                          amount = 0.05)), 
         axis.text.y = element_blank(), 
-        axis.text.x = element_text(colour = grey(0.6)), 
+        axis.text.x = element_text(colour = darken(col = "lightskyblue3", 
+                                                            amount = 0.25)), 
         axis.title = element_blank(),
         plot.title = element_text(size = rel(1.2), face = "bold", 
                                   margin = margin(0, 0, 4, 0, "pt")), 
         plot.subtitle = element_text(size = rel(0.8), 
                                      margin = margin(0, 0, 0, 0, "pt")), 
-        legend.margin = margin(8, 0, 24, 0, "pt"), 
+        plot.caption = element_markdown(hjust = 0, 
+                                        lineheight = 1.2,
+                                        margin = margin(12, 0, 0, 0, "pt")), 
+        plot.margin = margin(4, 4, 4, 4, "pt"), 
+        legend.margin = margin(8, 0, 4, 0, "pt"), 
         panel.background = element_rect(fill = lighten(col = "lightskyblue3", 
-                                                       amount = 0.2), 
+                                                       amount = 0.5), 
                                         size = 0), 
         strip.text = element_text(hjust = 0, 
                                   face = "bold", 
@@ -321,7 +337,7 @@ chart <- dat_chart |>
         legend.position = "top", 
         legend.direction = "horizontal")
 
-ggsave(filename = here(glue("outputs/benchmarking-{last_date}.png")), 
+ggsave(filename = here(glue("outputs/benchmarking/benchmarking-{last_date}.png")), 
        plot = chart, 
        width = 2000, 
        height = 3200, 
