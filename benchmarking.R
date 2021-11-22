@@ -53,6 +53,7 @@ dat_countries <- tribble(
   "Netherlands", "NL", "Europe", 
   "New Zealand", "NZ", "New Zealand", 
   "Norway", "NO", "Europe", 
+  "Portugal", "PT", "Europe", 
   "Singapore", "SG", "Australasia", 
   "South Korea", "KR", "Australasia", 
   "Spain", "ES", "Europe", 
@@ -105,6 +106,7 @@ dat_bench_14days <- dat_countries |>
             max_vax = max(people_fully_vaccinated, na.rm = TRUE), 
             mean_stringency = mean(stringency_index, na.rm = TRUE), 
             population = mean(population, na.rm = TRUE)) |> 
+  mutate(max_vax = ifelse(is.infinite(max_vax), NA_real_, max_vax)) |> 
   mutate(mean_daily_new_cases_per_5m = total_cases / (population / 5000000) / 14, 
          mean_daily_new_tests_per_5m = total_tests / (population / 5000000) / 14, 
          mean_daily_new_deaths_per_5m = total_deaths / (population / 5000000) / 14, 
@@ -247,7 +249,7 @@ chart <- dat_chart |>
   geom_quasirandom(shape = 21, 
                    stroke = 0.5, 
                    size = 4, 
-                   colour = grey(0.9), 
+                   colour = "white", 
                    bandwidth = 10, 
                    method = "quasirandom") + 
   geom_text(position = position_quasirandom(bandwidth = 10, 
@@ -261,7 +263,7 @@ chart <- dat_chart |>
              ncol = 1) + 
   facetted_pos_scales(y = list(
     scale_y_continuous(breaks = seq(0, max_mean_daily_new_cases_per_5m, 500),
-                       limits = c(-50, max_mean_daily_new_cases_per_5m),
+                       limits = c(-100, max_mean_daily_new_cases_per_5m),
                        labels = comma_format(accuracy = 1),
                        expand = expansion(0, 0),
                        position = "right"),
@@ -305,17 +307,16 @@ chart <- dat_chart |>
                     name = NULL, 
                     aesthetics = c("colour", "fill")) +
   labs(title = glue("COVID-19 benchmarks from selected countries for {last_date}"), 
-       subtitle = "Chart by Aaron Schiff with data from Our World in Data (github.com/aaronschiff/nz-covid)", 
+       subtitle = "Chart by Aaron Schiff with data from Our World in Data (CC-BY 4.0 - schiff.nz/covid/nz-benchmarking)", 
        caption = dat_countries_key) + 
   theme_minimal(base_family = "Fira Sans") + 
   theme(panel.grid.minor = element_blank(), 
         panel.grid.major.y = element_blank(), 
-        panel.grid.major.x = element_line(size = 0.2, 
-                                          colour = darken(col = "lightskyblue3", 
-                                                          amount = 0.05)), 
+        panel.grid.major.x = element_line(size = 0.2, grey(0.8)), 
+        panel.background = element_rect(fill = "seashell1", 
+                                        size = 0), 
         axis.text.y = element_blank(), 
-        axis.text.x = element_text(colour = darken(col = "lightskyblue3", 
-                                                            amount = 0.25)), 
+        axis.text.x = element_text(colour = grey(0.5)), 
         axis.title = element_blank(),
         plot.title = element_text(size = rel(1.2), face = "bold", 
                                   margin = margin(0, 0, 4, 0, "pt")), 
@@ -325,15 +326,12 @@ chart <- dat_chart |>
                                         lineheight = 1.2,
                                         margin = margin(12, 0, 0, 0, "pt")), 
         plot.margin = margin(4, 4, 4, 4, "pt"), 
-        legend.margin = margin(8, 0, 4, 0, "pt"), 
-        panel.background = element_rect(fill = lighten(col = "lightskyblue3", 
-                                                       amount = 0.5), 
-                                        size = 0), 
+        legend.margin = margin(8, 0, 0, 0, "pt"), 
         strip.text = element_text(hjust = 0, 
                                   face = "bold", 
                                   margin = margin(0, 0, 2, -0.25, "pt")), 
         strip.placement = "outside", 
-        panel.spacing = unit(20, "pt"), 
+        panel.spacing = unit(12, "pt"), 
         legend.position = "top", 
         legend.direction = "horizontal")
 
