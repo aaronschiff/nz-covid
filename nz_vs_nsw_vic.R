@@ -22,7 +22,7 @@ library(RcppRoll)
 dat_nsw <- read_csv(file = here("data/confirmed_cases_table1_location.csv"))   
 
 # https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
-dat_nz <- read_csv(file = here("data/covid_cases_2021-11-15.csv")) |>   
+dat_nz <- read_csv(file = here("data/covid_cases_2-2021-11-22.csv")) |>   
   clean_names()
 
 # https://www.coronavirus.vic.gov.au/victorian-coronavirus-covid-19-data
@@ -147,7 +147,7 @@ chart_outbreak_day <- chart_outbreak_day_dat |>
   annotate(geom = "text", 
            x = 85, 
            y = 2, 
-           label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au\ngithub.com/aaronschiff/nz-covid", 
+           label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au\nCC-BY 4.0 - schiff.nz/covid/nz-delta", 
            hjust = 0, 
            family = "Fira Sans", 
            size = 2) + 
@@ -184,9 +184,9 @@ chart_outbreak_day_mean_log <- chart_outbreak_day_dat |>
   ylab("Daily number of\ncases reported\n(log scale)") + 
   ggtitle(label = "Delta outbreak daily cases: 7-day moving average (log scale)") + 
   annotate(geom = "text", 
-           x = 82, 
+           x = 92, 
            y = 2, 
-           label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au\ngithub.com/aaronschiff/nz-covid", 
+           label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au\nCC-BY 4.0 - schiff.nz/covid/nz-delta", 
            hjust = 0, 
            family = "Fira Sans", 
            size = 2) + 
@@ -225,8 +225,8 @@ chart_outbreak_day_vax <- chart_outbreak_day_dat |>
   ggtitle(label = "Delta outbreak daily cases vs vaccination rate") + 
   annotate(geom = "text", 
            x = 0.02, 
-           y = 1700, 
-           label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au, covidlive.com.au\ngithub.com/aaronschiff/nz-covid", 
+           y = 1800, 
+           label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au, covidlive.com.au\nCC-BY 4.0 - schiff.nz/covid/nz-delta", 
            hjust = 0, 
            family = "Fira Sans", 
            size = 2) + 
