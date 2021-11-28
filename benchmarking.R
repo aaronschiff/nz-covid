@@ -34,6 +34,32 @@ dat_owd <- read_csv(file = here("data/coronavirus-data-explorer.csv"))
 
 
 # *****************************************************************************
+# Utility functions ----
+
+# Find most recent non-NA value of a vector. Assumes vector is already sorted
+# by date
+most_recent_numeric <- function(x) {
+  x_no_na <- as.numeric(na.omit(x))
+  if (length(x_no_na) > 0) {
+    y <- tail(x = x_no_na, n = 1)
+  } else {
+    y <- NA_real_
+  }
+  return(y)
+}
+
+# Custom maximum value for chart scales
+scale_max_val <- function(d, m, u, round_digits = 0) { 
+  y <- ceiling(
+    d |> 
+      filter(measure == m) |> 
+      pull(value) |> 
+      max(na.rm = TRUE) / u
+  ) * u + u/4
+  return(round(y, digits = round_digits))
+}
+
+# *****************************************************************************
 # Assemble benchmarking data ----
 
 # Select benchmarking countries (names may differ in different datasets)
@@ -90,27 +116,38 @@ while (i <= nrow(dat_countries)) {
 dat_bench_14days <- dat_countries |> 
   left_join(y = dat_owd |> 
               select(location, date, 
-                     new_cases, new_deaths, new_tests_smoothed, hosp_patients, 
+                     new_cases, new_deaths, new_tests_smoothed, 
+                     reproduction_rate, 
                      people_fully_vaccinated, 
                      stringency_index, 
                      population), 
             by = c("owd_country" = "location")) |> 
   # Weekly summary for last 2 weeks of OWD data
   filter(date > max(dat_owd$date) - days(14)) |> 
-  arrange(owd_country, date) |> 
+  arrange(owd_country, country_abbr, country_area, date) |> 
   group_by(owd_country, country_abbr, country_area) |> 
+  mutate(cases_valid = ifelse(is.na(new_cases), 0L, 1L),
+         deaths_valid = ifelse(is.na(new_deaths), 0L, 1L), 
+         tests_valid = ifelse(is.na(new_tests_smoothed), 0L, 1L), 
+         reproduction_rate_valid = ifelse(is.na(reproduction_rate), 0L, 1L), 
+         vax_valid = ifelse(is.na(people_fully_vaccinated), 0L, 1L),
+         stringency_valid = ifelse(is.na(stringency_index), 0L, 1L)) |> 
   summarise(total_cases = sum(new_cases, na.rm = TRUE), 
-            total_tests = sum(new_tests_smoothed, na.rm = TRUE), 
+            total_cases_n = sum(cases_valid), 
+            mean_tests = mean(new_tests_smoothed, na.rm = TRUE), 
+            total_tests_n = sum(tests_valid), 
             total_deaths = sum(new_deaths, na.rm = TRUE), 
-            mean_hosp = mean(hosp_patients, na.rm = TRUE), 
-            max_vax = max(people_fully_vaccinated, na.rm = TRUE), 
+            total_deaths_n = sum(deaths_valid), 
+            latest_reproduction_rate = most_recent_numeric(reproduction_rate), 
+            max_vax = most_recent_numeric(people_fully_vaccinated), 
+            total_vax_n = sum(vax_valid), 
             mean_stringency = mean(stringency_index, na.rm = TRUE), 
+            total_stringency_n = sum(stringency_valid), 
             population = mean(population, na.rm = TRUE)) |> 
   mutate(max_vax = ifelse(is.infinite(max_vax), NA_real_, max_vax)) |> 
   mutate(mean_daily_new_cases_per_5m = total_cases / (population / 5000000) / 14, 
-         mean_daily_new_tests_per_5m = total_tests / (population / 5000000) / 14, 
+         mean_daily_new_tests_per_5m = mean_tests / (population / 5000000), 
          mean_daily_new_deaths_per_5m = total_deaths / (population / 5000000) / 14, 
-         mean_hosp_per_5m = mean_hosp / (population / 5000000), 
          max_vax_rate = 100 * max_vax / population, 
          mean_stringency = mean(mean_stringency)) |> 
   ungroup() |> 
@@ -157,7 +194,7 @@ measures <- tribble(
   "mean_daily_new_deaths_per_5m", "Average daily deaths per 5 million people (14-day average)",
   "mean_total_deaths_per_5m", "Total deaths per 5 million people for the entire pandemic",
   "mean_daily_new_tests_per_5m", "Average daily tests per 5 million people (14-day average)",
-  "mean_hosp_per_5m", "Average number in hospital per 5 million people (14-day average; NZ data not available)",
+  "latest_reproduction_rate", "Estimated effective reproduction rate (most recent data)", 
   "max_vax_rate", "Fully vaccinated proportion of the total population (most recent data)",
   "mean_stringency", "Average government response stringency index (14-day average)"
 )
@@ -173,7 +210,7 @@ dat_chart <- bind_rows(
            mean_daily_new_cases_per_5m, 
            mean_daily_new_deaths_per_5m, 
            mean_daily_new_tests_per_5m, 
-           mean_hosp_per_5m, 
+           latest_reproduction_rate, 
            max_vax_rate, 
            mean_stringency) |> 
     pivot_longer(cols = c(-owd_country, -country_group, -country_abbr, -country_area), 
@@ -203,15 +240,6 @@ dat_chart <- bind_rows(
   arrange(measure, fct_rev(country_area), owd_country)
 
 # Max values for scales
-scale_max_val <- function(d, m, u) { 
-  y <- ceiling(
-    d |> 
-      filter(measure == m) |> 
-      pull(value) |> 
-      max(na.rm = TRUE) / u
-  ) * u + u/4
-  return(round(y))
-}
 max_mean_daily_new_cases_per_5m <- scale_max_val(d = dat_chart, 
                                                  m = measures$measure_label[1], 
                                                  u = 500)
@@ -232,9 +260,10 @@ max_mean_daily_new_tests_per_5m <- scale_max_val(d = dat_chart,
                                                  m = measures$measure_label[5],
                                                  u = 25000)
 
-max_mean_hosp_per_5m <- scale_max_val(d = dat_chart, 
-                                      m = measures$measure_label[6], 
-                                      u = 100)
+max_latest_reproduction_rate <- scale_max_val(d = dat_chart, 
+                                              m = measures$measure_label[6], 
+                                              u = 0.05, 
+                                              round_digits = 1)
 
 max_max_vax_rate <- 101
 
@@ -246,6 +275,10 @@ chart <- dat_chart |>
                        y = value, 
                        fill = country_area, 
                        label = country_abbr)) + 
+  geom_hline(data = dat_chart |> filter(measure == measures$measure_label[6]), 
+             mapping = aes(yintercept = 1.0), 
+             size = 0.25, 
+             colour = grey(0.5)) + 
   geom_quasirandom(shape = 21, 
                    stroke = 0.5, 
                    size = 4, 
@@ -282,13 +315,13 @@ chart <- dat_chart |>
                        labels = comma_format(accuracy = 1),
                        position = "right"),
     scale_y_continuous(breaks = seq(0, max_mean_daily_new_tests_per_5m, 25000), 
-                       limits = c(-2000, max_mean_daily_new_tests_per_5m), 
+                       limits = c(-2000, max_mean_daily_new_tests_per_5m + 5000), 
                        labels = comma_format(accuracy = 1), 
                        expand = expansion(0, 0), 
                        position = "right"), 
-    scale_y_continuous(breaks = seq(0, max_mean_hosp_per_5m, 100),
-                       limits = c(0, max_mean_hosp_per_5m),
-                       labels = comma_format(accuracy = 1),
+    scale_y_continuous(breaks = seq(0, max_latest_reproduction_rate, 0.1),
+                       limits = c(0, max_latest_reproduction_rate + 0.05),
+                       labels = comma_format(accuracy = 0.1),
                        expand = expansion(0, 0),
                        position = "right"),
     scale_y_continuous(breaks = seq(0, max_max_vax_rate, 5),
