@@ -22,7 +22,7 @@ library(RcppRoll)
 dat_nsw <- read_csv(file = here("data/confirmed_cases_table1_location.csv"))   
 
 # https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
-dat_nz <- read_csv(file = here("data/covid_cases_2-2021-11-22.csv")) |>   
+dat_nz <- read_csv(file = here("data/covid_cases_2021-11-29.csv")) |>   
   clean_names()
 
 # https://www.coronavirus.vic.gov.au/victorian-coronavirus-covid-19-data
@@ -30,7 +30,7 @@ dat_vic <- read_csv(file = here("data/ncov-covid-cases-by-lga-csv.csv")) |>
   clean_names()
 
 # NZ vax rate (fully vax of total population)
-# https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-vaccine-data
+# https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-news-and-media-updates
 # Manually updated from MoH press releases
 dat_nz_vax <- read_excel(path = here("data/nz_vax_by_date.xlsx")) |>   
   clean_names() |> 

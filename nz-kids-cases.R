@@ -7,7 +7,7 @@ library(janitor)
 library(scales)
 library(RcppRoll)
 
-dat <- read_csv(file = here("data/covid_cases_2021-11-25.csv")) |> 
+dat <- read_csv(file = here("data/covid_cases_2021-11-29.csv")) |> 
   clean_names()
 
 dat_nz_delta_l3_kids <- dat |> 
@@ -20,13 +20,15 @@ dat_nz_delta_l3_kids <- dat |>
   filter(dhb != "Managed Isolation & Quarantine", 
          is.na(historical)) |> 
   arrange(report_date) |> 
-  mutate(outbreak_day = as.integer(report_date - ymd("2021-09-22"))) |> 
-  filter(outbreak_day != max(outbreak_day)) |> 
-  count(age_group_2, outbreak_day) |> 
-  complete(outbreak_day = 0:max(outbreak_day), 
+  count(age_group_2, report_date, dhb) |> 
+  complete(report_date = seq(from = ymd("2021-09-22"), 
+                             to = max(dat$report_date), 
+                             by = "1 day"), 
            age_group_2 = c("0 to 9", "10 to 19", "Adults"), 
+           dhb, 
            fill = list(n = 0L)) |> 
-  group_by(age_group_2) |> 
+  arrange(dhb, age_group_2, report_date) |> 
+  group_by(age_group_2, dhb) |> 
   mutate(rolling_mean = roll_mean(x = n, 
                                   n = 7, 
                                   align = "right", 
@@ -37,9 +39,59 @@ dat_nz_delta_l3_kids <- dat |>
                               labels = c("Children aged 0 to 9", 
                                          "Children & young adults aged 10 to 19", 
                                          "Adults aged 20+"), 
-                              ordered = TRUE)) 
+                              ordered = TRUE)) |> 
+  mutate(outbreak_day = as.integer(report_date - ymd("2021-09-22"))) |>
+  group_by(age_group_2, dhb) %>%
+  slice_min(order_by = report_date, n = max(.$outbreak_day) - 1) |> 
+  ungroup()
 
-chart_dat_nz_delta_l3_kids <- dat_nz_delta_l3_kids |> 
+chart_nz_delta_l3_kids <- dat_nz_delta_l3_kids |> 
+  filter(dhb %in% c("Auckland", "Waitemata", "Counties Manukau")) |> 
+  ggplot(mapping = aes(x = outbreak_day, 
+                       y = rolling_mean, 
+                       colour = fct_rev(age_group_2))) + 
+  geom_line(size = 0.75) + 
+  xlab("Outbreak day since Auckland AL3") + 
+  ylab("Average daily\nnumber of\ncases reported") + 
+  ggtitle(label = "Delta outbreak 7-day average daily cases") + 
+  scale_x_continuous(breaks = seq(0, 200, 10)) + 
+  scale_y_continuous(breaks = seq(0, 160, 10),
+                     labels = comma_format(accuracy = 1)) +
+  scale_colour_manual(values = c("Children aged 0 to 9" = "firebrick", 
+                                 "Children & young adults aged 10 to 19" = "orange", 
+                                 "Adults aged 20+" = "cornflowerblue"), 
+                      name = NULL) + 
+  facet_wrap(facets = vars(dhb), nrow = 1) + 
+  theme_minimal(base_family = "Fira Sans") + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major = element_line(size = 0.2), 
+        panel.spacing.x = unit(16, "pt"), 
+        strip.text = element_text(face = "bold"), 
+        axis.title.y = element_text(angle = 0, hjust = 0, margin = margin(0, 8, 0, 0, "pt")), 
+        axis.title.x = element_text(margin = margin(8, 0, 0, 0, "pt")), 
+        legend.position = "top", 
+        legend.margin = margin(0, 0, 0, 0))
+
+ggsave(filename = here("outputs/kids/nz_kids_cases_outbreak_day_dhb.png"), 
+       plot = chart_nz_delta_l3_kids, 
+       width = 3000, 
+       height = 1600, 
+       units = "px", 
+       device = "png", 
+       bg = "white")
+
+dat_nz_delta_l3_kids_total <- dat_nz_delta_l3_kids |> 
+  group_by(report_date, outbreak_day, age_group_2) |> 
+  summarise(n = sum(n)) |> 
+  arrange(age_group_2, report_date) |> 
+  group_by(age_group_2) |> 
+  mutate(rolling_mean = roll_mean(x = n, 
+                                  n = 7, 
+                                  align = "right", 
+                                  fill = NA_real_)) |> 
+  ungroup()
+
+chart_nz_delta_l3_kids_total <- dat_nz_delta_l3_kids_total |> 
   ggplot(mapping = aes(x = outbreak_day, 
                        y = rolling_mean, 
                        colour = fct_rev(age_group_2))) + 
@@ -61,10 +113,43 @@ chart_dat_nz_delta_l3_kids <- dat_nz_delta_l3_kids |>
         axis.title.x = element_text(margin = margin(8, 0, 0, 0, "pt")), 
         legend.position = c(0.25, 0.92))
 
-ggsave(filename = here("outputs/nz-vs-au/nz_kids_cases_outbreak_day.png"), 
-       plot = chart_dat_nz_delta_l3_kids, 
+ggsave(filename = here("outputs/kids/nz_kids_cases_outbreak_day_total.png"), 
+       plot = chart_nz_delta_l3_kids_total, 
        width = 2400, 
        height = 1600, 
+       units = "px", 
+       device = "png", 
+       bg = "white")
+
+
+chart_nz_delta_l3_kids_total_scatter <- 
+  dat_nz_delta_l3_kids_total |> 
+  filter(age_group_2 != "Children & young adults aged 10 to 19") |> 
+  select(outbreak_day, age_group_2, rolling_mean) |> 
+  pivot_wider(names_from = age_group_2, values_from = rolling_mean) |> 
+  clean_names() |> 
+  ggplot(mapping = aes(x = adults_aged_20, y = children_aged_0_to_9)) + 
+  geom_point(colour = "firebrick") + 
+  geom_segment(mapping = aes(
+    xend = c(tail(adults_aged_20, n = -1), NA), 
+    yend = c(tail(children_aged_0_to_9, n = -1), NA)
+  ), 
+  colour = "firebrick") + 
+  scale_x_continuous(limits = c(0, 120), breaks = seq(0, 120, 20)) + 
+  scale_y_continuous(limits = c(0, 50), breaks = seq(0, 50, 10)) + 
+  xlab("Daily cases in adults aged 20+ (7-day average)") + 
+  ylab("Daily cases\nin children aged 0-9\n(7-day average)") + 
+  ggtitle(label = "Delta outbreak 7-day average daily cases since Auckland AL3") + 
+  theme_minimal(base_family = "Fira Sans") + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major = element_line(size = 0.2), 
+        axis.title.y = element_text(angle = 0, hjust = 0, margin = margin(0, 8, 0, 0, "pt")), 
+        axis.title.x = element_text(margin = margin(8, 0, 0, 0, "pt")))
+
+ggsave(filename = here("outputs/kids/nz_kids_cases_outbreak_day_total_scatter.png"), 
+       plot = chart_nz_delta_l3_kids_total_scatter, 
+       width = 2400, 
+       height = 1800, 
        units = "px", 
        device = "png", 
        bg = "white")
