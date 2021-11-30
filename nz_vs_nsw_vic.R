@@ -79,13 +79,13 @@ dat_vic_delta <- dat_vic |>
   mutate(outbreak_day = as.integer(diagnosis_date - ymd("2021-08-05"))) |> 
   count(outbreak_day)
 
-# Delta outbreak local cases in NZ since 17 August
+# Delta outbreak local cases in NZ since 18 August
 dat_nz_delta <- dat_nz |> 
-  filter(report_date >= ymd("2021-08-17")) |> 
+  filter(report_date >= ymd("2021-08-18")) |> 
   filter(dhb != "Managed Isolation & Quarantine", 
          is.na(historical)) |> 
   arrange(report_date) |> 
-  mutate(outbreak_day = as.integer(report_date - ymd("2021-08-17"))) |> 
+  mutate(outbreak_day = as.integer(report_date - ymd("2021-08-18"))) |> 
   filter(outbreak_day != max(outbreak_day)) |> 
   count(outbreak_day)
 
@@ -248,6 +248,74 @@ chart_outbreak_day_vax <- chart_outbreak_day_dat |>
 
 ggsave(filename = here("outputs/nz-vs-au/nz_vs_nsw_vic_by_vax_rate.png"), 
        plot = chart_outbreak_day_vax, 
+       width = 2400, 
+       height = 1600, 
+       units = "px", 
+       device = "png", 
+       bg = "white")
+
+# Chart of NZ from level 4 vs NSW and VIC full delta outbreak
+chart_outbreak_day_full_dat <- bind_rows(
+  # NSW
+  dat_nsw_delta |> 
+    mutate(area = "nsw") |> 
+    left_join(y = dat_nsw_vax |> 
+                select(outbreak_day, fully_vax_rate), 
+              by = "outbreak_day"), 
+  # VIC 
+  dat_vic_delta |> 
+    mutate(area = "vic") |> 
+    left_join(y = dat_vic_vax |> 
+                select(outbreak_day, fully_vax_rate), 
+              by = "outbreak_day"), 
+  
+  # NZ since level 3
+  dat_nz_delta |> 
+    mutate(area = "nz") |> 
+    left_join(y = dat_nz_vax |> 
+                select(delta_day, fully_vax_rate), 
+              by = c("outbreak_day" = "delta_day"))
+) |> 
+  mutate(area = factor(x = area, 
+                       levels = c("nsw", 
+                                  "vic", 
+                                  "nz"), 
+                       labels = c("New South Wales since 16 June", 
+                                  "Victoria since 5 August", 
+                                  "NZ since 18 August"), 
+                       ordered = TRUE))
+
+chart_outbreak_day_full <- chart_outbreak_day_full_dat |> 
+  ggplot(mapping = aes(x = outbreak_day, 
+                       y = n, 
+                       colour = area)) + 
+  geom_line(size = 0.75) + 
+  xlab("Outbreak day") + 
+  ylab("Daily number of\ncases reported") + 
+  ggtitle(label = "Delta outbreak daily cases") + 
+  annotate(geom = "text", 
+           x = 95, 
+           y = 2200, 
+           label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au\nCC-BY 4.0 - schiff.nz/covid/nz-delta", 
+           hjust = 0, 
+           family = "Fira Sans", 
+           size = 2) + 
+  scale_colour_manual(values = c("New South Wales since 16 June" = grey(0.35), 
+                                 "Victoria since 5 August" = grey(0.7), 
+                                 "NZ since 18 August" = "cornflowerblue"), 
+                      name = NULL) + 
+  scale_x_continuous(breaks = seq(0, 200, 10)) + 
+  scale_y_continuous(breaks = seq(0, 2400, 200), 
+                     labels = comma_format(accuracy = 1)) + 
+  theme_minimal(base_family = "Fira Sans") + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major = element_line(size = 0.2), 
+        axis.title.y = element_text(angle = 0, hjust = 0, margin = margin(0, 8, 0, 0, "pt")), 
+        axis.title.x = element_text(margin = margin(8, 0, 0, 0, "pt")), 
+        legend.position = c(0.22, 0.9))
+
+ggsave(filename = here("outputs/nz-vs-au/nz_vs_nsw_vic_by_outbreak_day_full.png"), 
+       plot = chart_outbreak_day_full, 
        width = 2400, 
        height = 1600, 
        units = "px", 
