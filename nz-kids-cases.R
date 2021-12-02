@@ -1,5 +1,7 @@
 # Number of child cases in NZ
 
+# Data source: https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
+
 library(tidyverse)
 library(here)
 library(lubridate)
@@ -7,7 +9,7 @@ library(janitor)
 library(scales)
 library(RcppRoll)
 
-dat <- read_csv(file = here("data/covid_cases_2021-11-29.csv")) |> 
+dat <- read_csv(file = here("data/covid_cases_2021-12-02.csv")) |> 
   clean_names()
 
 dat_nz_delta_l3_kids <- dat |> 
@@ -121,7 +123,6 @@ ggsave(filename = here("outputs/kids/nz_kids_cases_outbreak_day_total.png"),
        device = "png", 
        bg = "white")
 
-
 chart_nz_delta_l3_kids_total_scatter <- 
   dat_nz_delta_l3_kids_total |> 
   filter(age_group_2 != "Children & young adults aged 10 to 19") |> 
@@ -150,6 +151,36 @@ ggsave(filename = here("outputs/kids/nz_kids_cases_outbreak_day_total_scatter.pn
        plot = chart_nz_delta_l3_kids_total_scatter, 
        width = 2400, 
        height = 1800, 
+       units = "px", 
+       device = "png", 
+       bg = "white")
+
+chart_nz_delta_l3_kids_per_adult <- dat_nz_delta_l3_kids_total |> 
+  filter(age_group_2 != "Children & young adults aged 10 to 19") |> 
+  select(-n) |> 
+  pivot_wider(names_from = age_group_2, values_from = rolling_mean) |> 
+  clean_names() |> 
+  mutate(child_adult_ratio = children_aged_0_to_9 / adults_aged_20) |> 
+  ggplot(mapping = aes(x = outbreak_day, 
+                       y = child_adult_ratio)) + 
+  geom_line(size = 0.75, colour = "firebrick4") + 
+  xlab("Outbreak day since Auckland AL3") + 
+  ylab("Average daily\nnumber of\ncases reported") + 
+  ggtitle(label = "Delta outbreak 7-day average daily cases") + 
+  scale_x_continuous(breaks = seq(0, 200, 10)) + 
+  # scale_y_continuous(breaks = seq(0, 160, 10),
+  #                    labels = comma_format(accuracy = 1)) +
+  theme_minimal(base_family = "Fira Sans") + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major = element_line(size = 0.2), 
+        axis.title.y = element_text(angle = 0, hjust = 0, margin = margin(0, 8, 0, 0, "pt")), 
+        axis.title.x = element_text(margin = margin(8, 0, 0, 0, "pt")), 
+        legend.position = c(0.25, 0.92))
+
+ggsave(filename = here("outputs/kids/nz_kids_cases_outbreak_day_total.png"), 
+       plot = chart_nz_delta_l3_kids_total, 
+       width = 2400, 
+       height = 1600, 
        units = "px", 
        device = "png", 
        bg = "white")
