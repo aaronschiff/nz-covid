@@ -22,7 +22,7 @@ library(RcppRoll)
 dat_nsw <- read_csv(file = here("data/confirmed_cases_table1_location.csv"))   
 
 # https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
-dat_nz <- read_csv(file = here("data/covid_cases_2021-11-29.csv")) |>   
+dat_nz <- read_csv(file = here("data/covid_cases_2021-12-06.csv")) |>   
   clean_names()
 
 # https://www.coronavirus.vic.gov.au/victorian-coronavirus-covid-19-data
@@ -145,8 +145,8 @@ chart_outbreak_day <- chart_outbreak_day_dat |>
   ylab("Daily number of\ncases reported") + 
   ggtitle(label = "Delta outbreak daily cases") + 
   annotate(geom = "text", 
-           x = 85, 
-           y = 2, 
+           x = 97, 
+           y = 1800, 
            label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au\nCC-BY 4.0 - schiff.nz/covid/nz-delta", 
            hjust = 0, 
            family = "Fira Sans", 
@@ -163,7 +163,8 @@ chart_outbreak_day <- chart_outbreak_day_dat |>
         panel.grid.major = element_line(size = 0.2), 
         axis.title.y = element_text(angle = 0, hjust = 0, margin = margin(0, 8, 0, 0, "pt")), 
         axis.title.x = element_text(margin = margin(8, 0, 0, 0, "pt")), 
-        legend.position = c(0.22, 0.9))
+        legend.position = c(0.75, 0.9), 
+        plot.margin = margin(4, 12, 4, 4, "pt"))
 
 ggsave(filename = here("outputs/nz-vs-au/nz_vs_nsw_vic_by_outbreak_day.png"), 
        plot = chart_outbreak_day, 
@@ -184,7 +185,7 @@ chart_outbreak_day_mean_log <- chart_outbreak_day_dat |>
   ylab("Daily number of\ncases reported\n(log scale)") + 
   ggtitle(label = "Delta outbreak daily cases: 7-day moving average (log scale)") + 
   annotate(geom = "text", 
-           x = 92, 
+           x = 100, 
            y = 2, 
            label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au\nCC-BY 4.0 - schiff.nz/covid/nz-delta", 
            hjust = 0, 
@@ -203,7 +204,8 @@ chart_outbreak_day_mean_log <- chart_outbreak_day_dat |>
         panel.grid.major = element_line(size = 0.2), 
         axis.title.y = element_text(angle = 0, hjust = 0, margin = margin(0, 8, 0, 0, "pt")), 
         axis.title.x = element_text(margin = margin(8, 0, 0, 0, "pt")), 
-        legend.position = c(0.765, 0.3))
+        legend.position = c(0.765, 0.3), 
+        plot.margin = margin(4, 12, 4, 4, "pt"))
 
 ggsave(filename = here("outputs/nz-vs-au/nz_vs_nsw_vic_by_outbreak_day_mean_log.png"), 
        plot = chart_outbreak_day_mean_log, 
@@ -294,8 +296,8 @@ chart_outbreak_day_full <- chart_outbreak_day_full_dat |>
   ylab("Daily number of\ncases reported") + 
   ggtitle(label = "Delta outbreak daily cases") + 
   annotate(geom = "text", 
-           x = 95, 
-           y = 2200, 
+           x = 103, 
+           y = 1800, 
            label = "Chart by Aaron Schiff\nData sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au\nCC-BY 4.0 - schiff.nz/covid/nz-delta", 
            hjust = 0, 
            family = "Fira Sans", 
@@ -312,7 +314,8 @@ chart_outbreak_day_full <- chart_outbreak_day_full_dat |>
         panel.grid.major = element_line(size = 0.2), 
         axis.title.y = element_text(angle = 0, hjust = 0, margin = margin(0, 8, 0, 0, "pt")), 
         axis.title.x = element_text(margin = margin(8, 0, 0, 0, "pt")), 
-        legend.position = c(0.22, 0.9))
+        legend.position = c(0.75, 0.9), 
+        plot.margin = margin(4, 12, 4, 4, "pt"))
 
 ggsave(filename = here("outputs/nz-vs-au/nz_vs_nsw_vic_by_outbreak_day_full.png"), 
        plot = chart_outbreak_day_full, 
