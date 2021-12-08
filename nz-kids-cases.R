@@ -9,7 +9,8 @@ library(janitor)
 library(scales)
 library(RcppRoll)
 
-dat <- read_csv(file = here("data/covid_cases_2021-12-02.csv")) |> 
+dat <- read_csv(file = here("data/covid_cases_2021-12-08.csv"), 
+                col_types = "Dcccccc") |> 
   clean_names()
 
 dat_nz_delta_l3_kids <- dat |> 
@@ -137,7 +138,7 @@ chart_nz_delta_l3_kids_total_scatter <-
   ), 
   colour = "firebrick") + 
   scale_x_continuous(limits = c(0, 120), breaks = seq(0, 120, 20)) + 
-  scale_y_continuous(limits = c(0, 50), breaks = seq(0, 50, 10)) + 
+  scale_y_continuous(limits = c(0, 60), breaks = seq(0, 60, 10)) + 
   xlab("Daily cases in adults aged 20+ (7-day average)") + 
   ylab("Daily cases\nin children aged 0-9\n(7-day average)") + 
   ggtitle(label = "Delta outbreak 7-day average daily cases since Auckland AL3") + 
@@ -150,7 +151,7 @@ chart_nz_delta_l3_kids_total_scatter <-
 ggsave(filename = here("outputs/kids/nz_kids_cases_outbreak_day_total_scatter.png"), 
        plot = chart_nz_delta_l3_kids_total_scatter, 
        width = 2400, 
-       height = 1800, 
+       height = 2200, 
        units = "px", 
        device = "png", 
        bg = "white")
@@ -168,7 +169,8 @@ chart_nz_delta_l3_kids_per_adult <- dat_nz_delta_l3_kids_total |>
   ylab("Average daily\nnumber of\ncases reported") + 
   ggtitle(label = "Delta outbreak 7-day average daily cases") + 
   scale_x_continuous(breaks = seq(0, 200, 10)) + 
-  # scale_y_continuous(breaks = seq(0, 160, 10),
+  # scale_y_continuous(breaks = seq(0, 60, 10),
+  #                    limits = c(0, 60), 
   #                    labels = comma_format(accuracy = 1)) +
   theme_minimal(base_family = "Fira Sans") + 
   theme(panel.grid.minor = element_blank(), 
@@ -177,8 +179,8 @@ chart_nz_delta_l3_kids_per_adult <- dat_nz_delta_l3_kids_total |>
         axis.title.x = element_text(margin = margin(8, 0, 0, 0, "pt")), 
         legend.position = c(0.25, 0.92))
 
-ggsave(filename = here("outputs/kids/nz_kids_cases_outbreak_day_total.png"), 
-       plot = chart_nz_delta_l3_kids_total, 
+ggsave(filename = here("outputs/kids/nz_kids_per_adult.png"), 
+       plot = chart_nz_delta_l3_kids_per_adult, 
        width = 2400, 
        height = 1600, 
        units = "px", 
