@@ -118,7 +118,7 @@ while (i <= nrow(dat_countries)) {
                               dat_countries$country_abbr[i], 
                               "**: ", 
                               dat_countries$owd_country[i])
-  if (j == 12L) {
+  if (j == 8L) {
     dat_countries_key <- paste0(dat_countries_key, "<br>")
     j <- 1L
   } else {
@@ -390,7 +390,7 @@ chart <- dat_chart |>
 
 ggsave(filename = here(glue("outputs/benchmarking/benchmarking-oecd-{last_date}.png")), 
        plot = chart, 
-       width = 2800, 
+       width = 2000, 
        height = 3200, 
        units = "px", 
        device = "png", 
