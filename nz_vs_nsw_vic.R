@@ -42,7 +42,7 @@ register_font(
 dat_nsw <- read_csv(file = here("data/confirmed_cases_table1_location.csv"))   
 
 # https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
-dat_nz <- read_csv(file = here("data/covid_cases_2021-12-06.csv")) |>   
+dat_nz <- read_csv(file = here("data/covid_cases_2021-12-13.csv")) |>   
   clean_names()
 
 # https://www.coronavirus.vic.gov.au/victorian-coronavirus-covid-19-data
