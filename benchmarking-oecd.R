@@ -264,7 +264,7 @@ max_mean_daily_new_cases_per_5m <- scale_max_val(d = dat_chart,
 
 max_mean_total_cases_per_5m <- scale_max_val(d = dat_chart, 
                                              m = measures$measure_label[2], 
-                                             u = 50000)
+                                             u = 250000)
 
 max_mean_daily_new_deaths_per_5m <- scale_max_val(d = dat_chart, 
                                                   m = measures$measure_label[3], 
@@ -320,7 +320,7 @@ chart <- dat_chart |>
                        labels = comma_format(accuracy = 1),
                        expand = expansion(0, 0),
                        position = "right"),
-    scale_y_continuous(breaks = seq(0, max_mean_total_cases_per_5m, 100000),
+    scale_y_continuous(breaks = seq(0, max_mean_total_cases_per_5m, 250000),
                        limits = c(-5000, max_mean_total_cases_per_5m),
                        labels = comma_format(accuracy = 1),
                        expand = expansion(0, 0),
