@@ -13,6 +13,10 @@ library(RcppRoll)
 library(ragg)
 library(systemfonts)
 
+nz_outbreak_start <- ymd("2021-08-18")
+nsw_outbreak_start <- ymd("2021-06-16")
+vic_outbreak_start <- ymd("2021-08-05")
+
 # *****************************************************************************
 
 
@@ -42,7 +46,7 @@ register_font(
 dat_nsw <- read_csv(file = here("data/confirmed_cases_table1_location.csv"))   
 
 # https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
-dat_nz <- read_csv(file = here("data/covid_cases_2021-12-13.csv")) |>   
+dat_nz <- read_csv(file = here("data/covid_cases_2021-12-16.csv")) |>   
   clean_names()
 
 # https://www.coronavirus.vic.gov.au/victorian-coronavirus-covid-19-data
@@ -58,8 +62,7 @@ dat_nz_vax <- read_excel(path = here("data/nz_vax_by_date.xlsx")) |>
   mutate(fully_vax_people = cumsum(second_dose_administered)) |> 
   mutate(fully_vax_rate = fully_vax_people / 5122600) |>  # Stats NZ population estimate at 30 June 2021
   select(date, fully_vax_rate) |> 
-  mutate(delta_day = as.integer(date - ymd("2021-08-17")), 
-         delta_level3_day = as.integer(date - ymd("2021-09-22")))
+  mutate(outbreak_day = as.integer(date - nz_outbreak_start))
 
 # NSW vax rate (fully vax of total population)
 # https://covidlive.com.au/report/daily-vaccinations-people/nsw
@@ -68,7 +71,7 @@ dat_nsw_vax <- read_excel(path = here("data/nsw_second_doses.xlsx")) |>
   mutate(date = as_date(date)) |> 
   arrange(date) |> 
   mutate(fully_vax_rate = second_doses / 8176400) |>     # ABS population estimate at 31 March 2021
-  mutate(outbreak_day = as.integer(date - ymd("2021-06-16"))) 
+  mutate(outbreak_day = as.integer(date - nsw_outbreak_start)) 
 
 # VIC vax rate (fully vax of total population)
 # https://covidlive.com.au/report/daily-vaccinations-people/vic
@@ -77,7 +80,7 @@ dat_vic_vax <- read_excel(path = here("data/vic_second_doses.xlsx")) |>
   mutate(date = as_date(date)) |> 
   arrange(date) |> 
   mutate(fully_vax_rate = second_doses / 6648600) |>      # ABS population estimate at 31 March 2021
-  mutate(outbreak_day = as.integer(date - ymd("2021-08-05")))
+  mutate(outbreak_day = as.integer(date - vic_outbreak_start))
 
 # *****************************************************************************
 
@@ -87,35 +90,25 @@ dat_vic_vax <- read_excel(path = here("data/vic_second_doses.xlsx")) |>
 
 # Delta outbreak local cases in NSW since 16 June
 dat_nsw_delta <- dat_nsw |> 
-  filter(notification_date >= ymd("2021-06-16")) |> 
+  filter(notification_date >= nsw_outbreak_start) |> 
   filter(!is.na(lga_name19)) |> 
-  mutate(outbreak_day = as.integer(notification_date - ymd("2021-06-16"))) |> 
+  mutate(outbreak_day = as.integer(notification_date - nsw_outbreak_start)) |> 
   count(outbreak_day)
 
 # Delta outbreak local cases in VIC since 5 August
 dat_vic_delta <- dat_vic |> 
-  filter(diagnosis_date >= ymd("2021-08-05")) |> 
+  filter(diagnosis_date >= vic_outbreak_start) |> 
   filter(localgovernmentarea != "Overseas") |> 
-  mutate(outbreak_day = as.integer(diagnosis_date - ymd("2021-08-05"))) |> 
+  mutate(outbreak_day = as.integer(diagnosis_date - vic_outbreak_start)) |> 
   count(outbreak_day)
 
 # Delta outbreak local cases in NZ since 18 August
 dat_nz_delta <- dat_nz |> 
-  filter(report_date >= ymd("2021-08-18")) |> 
+  filter(report_date >= nz_outbreak_start) |> 
   filter(dhb != "Managed Isolation & Quarantine", 
          is.na(historical)) |> 
   arrange(report_date) |> 
-  mutate(outbreak_day = as.integer(report_date - ymd("2021-08-18"))) |> 
-  filter(outbreak_day != max(outbreak_day)) |> 
-  count(outbreak_day, report_date)
-
-# Delta outbreak local cases in NZ since Auckland level 3 on 22 September
-dat_nz_delta_l3 <- dat_nz |> 
-  filter(report_date >= ymd("2021-09-22")) |> 
-  filter(dhb != "Managed Isolation & Quarantine", 
-         is.na(historical)) |> 
-  arrange(report_date) |> 
-  mutate(outbreak_day = as.integer(report_date - ymd("2021-09-22"))) |> 
+  mutate(outbreak_day = as.integer(report_date - nz_outbreak_start)) |> 
   filter(outbreak_day != max(outbreak_day)) |> 
   count(outbreak_day, report_date)
 
@@ -145,8 +138,8 @@ chart_outbreak_day_dat <- bind_rows(
     select(-report_date) |> 
     mutate(area = "nz") |> 
     left_join(y = dat_nz_vax |> 
-                select(delta_day, fully_vax_rate), 
-              by = c("outbreak_day" = "delta_day"))
+                select(outbreak_day, fully_vax_rate), 
+              by = "outbreak_day")
 ) |> 
   mutate(area = factor(x = area, 
                        levels = c("nsw", 
@@ -203,7 +196,7 @@ chart_outbreak_day <- chart_outbreak_day_dat |>
            size = 2, 
            colour = "cornflowerblue") + 
   xlab("Outbreak day") + 
-  ylab("Daily number of\ncases reported") + 
+  ylab("Daily number\nof cases\nreported") + 
   ggtitle(label = "Delta outbreak daily cases", 
           subtitle = "Chart by Aaron Schiff. CC-BY 4.0. Code: schiff.nz/covid/nz-delta. Data sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au") + 
   scale_colour_manual(values = c("New South Wales since 16 June" = grey(0.35), 
@@ -278,7 +271,7 @@ chart_outbreak_day_mean_log <- chart_outbreak_day_dat |>
            size = 2, 
            colour = "cornflowerblue") + 
   xlab("Outbreak day") + 
-  ylab("Daily number of\ncases reported\n(log scale)") + 
+  ylab("Daily number\nof cases\nreported\n(log scale)") + 
   ggtitle(label = "Delta outbreak daily cases: 7-day moving average (log scale)", 
           subtitle = "Chart by Aaron Schiff. CC-BY 4.0. Code: schiff.nz/covid/nz-delta. Data sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au") + 
   scale_colour_manual(values = c("New South Wales since 16 June" = grey(0.35), 
@@ -346,7 +339,7 @@ chart_outbreak_day_vax <- chart_outbreak_day_dat |>
            size = 2, 
            colour = "cornflowerblue") + 
   xlab("Fully vaccinated (% of total population)") + 
-  ylab("Daily number of\ncases reported") + 
+  ylab("Daily number\nof cases\nreported") + 
   ggtitle(label = "Delta outbreak daily cases vs vaccination rate",
           subtitle = "Chart by Aaron Schiff. CC-BY 4.0. Code: schiff.nz/covid/nz-delta. Data sources: health.govt.nz, data.nsw.gov.au, coronavirus.vic.gov.au, covidlive.com.au") + 
   scale_colour_manual(values = c("New South Wales since 16 June" = grey(0.35), 
