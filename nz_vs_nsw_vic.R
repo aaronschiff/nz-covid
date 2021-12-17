@@ -150,6 +150,21 @@ chart_outbreak_day_dat <- bind_rows(
                                   "NZ since 18 August"), 
                        ordered = TRUE))
 
+# Smoothed cases on log scale
+chart_outbreak_day_dat_smoothed <- chart_outbreak_day_dat |> 
+  select(area, outbreak_day, n) |> 
+  arrange(area, outbreak_day, n) |> 
+  mutate(log_n = log(n)) |> 
+  nest_by(area) |> 
+  mutate(gam_m = list(mgcv::gam(formula = log_n ~ s(outbreak_day, bs = "cs"), 
+                                data = data))) |> 
+  mutate(gam_p = list(predict(gam_m))) |> 
+  select(-gam_m) |> 
+  unnest(cols = c(data, gam_p)) |> 
+  mutate(s_n = exp(gam_p)) |> 
+  ungroup()
+
+# Chart code
 chart_outbreak_day <- chart_outbreak_day_dat |> 
   ggplot(mapping = aes(x = outbreak_day, 
                        y = n, 
@@ -167,7 +182,9 @@ chart_outbreak_day <- chart_outbreak_day_dat |>
              linetype = "dotted", 
              size = 0.4) + 
   geom_line(size = 0.75, alpha = 0.75) + 
-  geom_smooth(method = "gam", se = FALSE, size = 0.35) + 
+  geom_line(mapping = aes(x = outbreak_day, y = s_n), 
+            data = chart_outbreak_day_dat_smoothed, 
+            size = 0.35) + 
   annotate(geom = "text", 
            x = 1, 
            y = 2250, 
@@ -224,6 +241,7 @@ ggsave(filename = here("outputs/nz-vs-au/nz_vs_nsw_vic_by_outbreak_day.png"),
        device = agg_png, 
        bg = "white")
 
+# 7-day average cases on log scale
 chart_outbreak_day_mean_log <- chart_outbreak_day_dat |> 
   group_by(area) |> 
   mutate(mean_n = roll_mean(x = n, n = 7L, align = "right", fill = NA_real_)) |> 
