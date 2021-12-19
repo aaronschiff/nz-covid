@@ -88,7 +88,8 @@ dat_countries <- tribble(
   "Taiwan", "TW", "Australasia", 
   "United Kingdom", "UK", "Europe", 
   "United States", "US", "Americas"
-)
+) |> 
+  arrange(country_abbr)
 
 # Assemble text for country key at bottom of chart
 i <- 1L
@@ -246,7 +247,7 @@ max_mean_daily_new_cases_per_5m <- scale_max_val(d = dat_chart,
 
 max_mean_total_cases_per_5m <- scale_max_val(d = dat_chart, 
                                              m = measures$measure_label[2], 
-                                             u = 50000)
+                                             u = 100000)
 
 max_mean_daily_new_deaths_per_5m <- scale_max_val(d = dat_chart, 
                                                   m = measures$measure_label[3], 
@@ -254,7 +255,7 @@ max_mean_daily_new_deaths_per_5m <- scale_max_val(d = dat_chart,
 
 max_mean_total_deaths_per_5m <- scale_max_val(d = dat_chart,
                                               m = measures$measure_label[4], 
-                                              u = 1000)
+                                              u = 1000) + 200
 
 max_mean_daily_new_tests_per_5m <- scale_max_val(d = dat_chart,
                                                  m = measures$measure_label[5],
