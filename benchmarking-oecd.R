@@ -213,8 +213,8 @@ measures <- tribble(
   "mean_total_deaths_per_5m", "Total deaths per 5 million people for the entire pandemic",
   "mean_daily_new_tests_per_5m", "Average daily tests per 5 million people (14-day average)",
   "latest_reproduction_rate", "Estimated effective reproduction rate (most recent data)", 
-  "max_vax_rate", "Fully vaccinated proportion of the total population (most recent data)",
-  "mean_stringency", "Average government response stringency index (14-day average)"
+  "max_vax_rate", "Fully vaccinated proportion of the total population (most recent data)"
+  #"mean_stringency", "Average government response stringency index (14-day average)"
 )
 
 # Chart data
@@ -229,8 +229,8 @@ dat_chart <- bind_rows(
            mean_daily_new_deaths_per_5m, 
            #mean_daily_new_tests_per_5m, 
            #latest_reproduction_rate, 
-           max_vax_rate, 
-           mean_stringency) |> 
+           max_vax_rate) |> 
+           #mean_stringency) |> 
     pivot_longer(cols = c(-owd_country, -country_group, -country_abbr, -country_area), 
                  names_to = "measure", values_to = "value"), 
   
@@ -285,7 +285,7 @@ max_mean_total_deaths_per_5m <- scale_max_val(d = dat_chart,
 
 max_max_vax_rate <- 101
 
-max_mean_stringency <- 101
+#max_mean_stringency <- 101
 
 # Chart code
 chart <- dat_chart |> 
@@ -347,11 +347,11 @@ chart <- dat_chart |>
     scale_y_continuous(breaks = seq(0, max_max_vax_rate, 5),
                        limits = c(0, max_max_vax_rate),
                        expand = expansion(0, 0),
-                       position = "right"),
-    scale_y_continuous(breaks = seq(0, max_mean_stringency, 10),
-                       limits = c(0, max_mean_stringency),
-                       expand = expansion(0, 0),
                        position = "right")
+    # scale_y_continuous(breaks = seq(0, max_mean_stringency, 10),
+    #                    limits = c(0, max_mean_stringency),
+    #                    expand = expansion(0, 0),
+    #                    position = "right")
   )) +
   scale_fill_manual(values = c("New Zealand" = "#6929c4", 
                                "Australasia" = lighten(col = "#33b1ff", amount = 0.2), 
@@ -391,7 +391,7 @@ chart <- dat_chart |>
 ggsave(filename = here(glue("outputs/benchmarking/benchmarking-oecd-{last_date}.png")), 
        plot = chart, 
        width = 2000, 
-       height = 3200, 
+       height = 2800, 
        units = "px", 
        device = "png", 
        bg = "white")
