@@ -243,7 +243,7 @@ dat_chart <- bind_rows(
 # Max values for scales
 max_mean_daily_new_cases_per_5m <- scale_max_val(d = dat_chart, 
                                                  m = measures$measure_label[1], 
-                                                 u = 500)
+                                                 u = 1000)
 
 max_mean_total_cases_per_5m <- scale_max_val(d = dat_chart, 
                                              m = measures$measure_label[2], 
@@ -296,13 +296,13 @@ chart <- dat_chart |>
              scales = "free", 
              ncol = 1) + 
   facetted_pos_scales(y = list(
-    scale_y_continuous(breaks = seq(0, max_mean_daily_new_cases_per_5m, 500),
-                       limits = c(-100, max_mean_daily_new_cases_per_5m),
+    scale_y_continuous(breaks = seq(0, max_mean_daily_new_cases_per_5m, 2000),
+                       limits = c(-500, max_mean_daily_new_cases_per_5m),
                        labels = comma_format(accuracy = 1),
                        expand = expansion(0, 0),
                        position = "right"),
-    scale_y_continuous(breaks = seq(0, max_mean_total_cases_per_5m, 100000),
-                       limits = c(-5000, max_mean_total_cases_per_5m),
+    scale_y_continuous(breaks = seq(0, max_mean_total_cases_per_5m, 200000),
+                       limits = c(-10000, max_mean_total_cases_per_5m),
                        labels = comma_format(accuracy = 1),
                        expand = expansion(0, 0),
                        position = "right"), 
