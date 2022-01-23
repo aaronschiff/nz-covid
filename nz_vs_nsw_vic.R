@@ -46,7 +46,7 @@ register_font(
 dat_nsw <- read_csv(file = here("data/confirmed_cases_table1_location.csv"))   
 
 # https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
-dat_nz <- read_csv(file = here("data/covid_cases_2021-12-20.csv")) |>   
+dat_nz <- read_csv(file = here("data/covid_cases_2021-12-31.csv")) |>   
   clean_names()
 
 # https://www.coronavirus.vic.gov.au/victorian-coronavirus-covid-19-data
@@ -221,8 +221,8 @@ chart_outbreak_day <- chart_outbreak_day_dat |>
                                  "NZ since 18 August" = "cornflowerblue"), 
                       name = NULL) + 
   scale_x_continuous(breaks = seq(0, 200, 10)) + 
-  scale_y_continuous(breaks = seq(0, 3000, 200), 
-                     labels = comma_format(accuracy = 1)) + 
+  # scale_y_continuous(breaks = seq(0, 3000, 200), 
+  #                    labels = comma_format(accuracy = 1)) + 
   theme_minimal(base_family = "Fira Sans Custom") + 
   theme(panel.grid.minor = element_blank(), 
         panel.grid.major = element_line(size = 0.2), 
@@ -298,8 +298,8 @@ chart_outbreak_day_mean_log <- chart_outbreak_day_dat |>
                       name = NULL) + 
   scale_x_continuous(breaks = seq(0, 200, 10)) + 
   scale_y_log10(labels = comma_format(accuracy = 1), 
-                breaks = c(1, 10, 100, 1000), 
-                limits = c(1, 2500)) + 
+                breaks = c(1, 10, 100, 1000, 10000), 
+                limits = c(1, 25000)) + 
   theme_minimal(base_family = "Fira Sans Custom") + 
   theme(panel.grid.minor = element_blank(), 
         panel.grid.major = element_line(size = 0.2), 
