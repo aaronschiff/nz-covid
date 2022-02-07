@@ -243,11 +243,11 @@ dat_chart <- bind_rows(
 # Max values for scales
 max_mean_daily_new_cases_per_5m <- scale_max_val(d = dat_chart, 
                                                  m = measures$measure_label[1], 
-                                                 u = 1000)
+                                                 u = 5000)
 
 max_mean_total_cases_per_5m <- scale_max_val(d = dat_chart, 
                                              m = measures$measure_label[2], 
-                                             u = 100000)
+                                             u = 250000)
 
 max_mean_daily_new_deaths_per_5m <- scale_max_val(d = dat_chart, 
                                                   m = measures$measure_label[3], 
@@ -259,7 +259,7 @@ max_mean_total_deaths_per_5m <- scale_max_val(d = dat_chart,
 
 max_mean_daily_new_tests_per_5m <- scale_max_val(d = dat_chart,
                                                  m = measures$measure_label[5],
-                                                 u = 25000)
+                                                 u = 50000)
 
 max_latest_reproduction_rate <- scale_max_val(d = dat_chart, 
                                               m = measures$measure_label[6], 
@@ -296,18 +296,18 @@ chart <- dat_chart |>
              scales = "free", 
              ncol = 1) + 
   facetted_pos_scales(y = list(
-    scale_y_continuous(breaks = seq(0, max_mean_daily_new_cases_per_5m, 2000),
+    scale_y_continuous(breaks = seq(0, max_mean_daily_new_cases_per_5m, 5000),
                        limits = c(-500, max_mean_daily_new_cases_per_5m),
                        labels = comma_format(accuracy = 1),
                        expand = expansion(0, 0),
                        position = "right"),
-    scale_y_continuous(breaks = seq(0, max_mean_total_cases_per_5m, 200000),
-                       limits = c(-10000, max_mean_total_cases_per_5m),
+    scale_y_continuous(breaks = seq(0, max_mean_total_cases_per_5m, 250000),
+                       limits = c(-20000, max_mean_total_cases_per_5m),
                        labels = comma_format(accuracy = 1),
                        expand = expansion(0, 0),
                        position = "right"), 
     scale_y_continuous(breaks = seq(0, max_mean_daily_new_deaths_per_5m, 1),
-                       limits = c(-0.25, max_mean_daily_new_deaths_per_5m),
+                       limits = c(-0.5, max_mean_daily_new_deaths_per_5m),
                        expand = expansion(0, 0),
                        position = "right"),
     scale_y_continuous(breaks = seq(0, max_mean_total_deaths_per_5m, 1000),
@@ -315,8 +315,8 @@ chart <- dat_chart |>
                        expand = expansion(0, 0),
                        labels = comma_format(accuracy = 1),
                        position = "right"),
-    scale_y_continuous(breaks = seq(0, max_mean_daily_new_tests_per_5m, 25000), 
-                       limits = c(-2000, max_mean_daily_new_tests_per_5m + 5000), 
+    scale_y_continuous(breaks = seq(0, max_mean_daily_new_tests_per_5m, 50000), 
+                       limits = c(-2000, max_mean_daily_new_tests_per_5m), 
                        labels = comma_format(accuracy = 1), 
                        expand = expansion(0, 0), 
                        position = "right"), 
