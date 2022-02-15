@@ -95,16 +95,16 @@ dat_nz_delta_l3_kids_total <- dat_nz_delta_l3_kids |>
   ungroup()
 
 chart_nz_delta_l3_kids_total <- dat_nz_delta_l3_kids_total |> 
-  ggplot(mapping = aes(x = outbreak_day, 
+  ggplot(mapping = aes(x = report_date, 
                        y = rolling_mean, 
                        colour = fct_rev(age_group_2))) + 
   geom_line(size = 0.75) + 
-  xlab("Outbreak day since Auckland AL3") + 
   ylab("Average daily\nnumber of\ncases reported") + 
-  ggtitle(label = "Delta outbreak 7-day average daily cases") + 
-  scale_x_continuous(breaks = seq(0, 200, 10)) + 
-  scale_y_continuous(breaks = seq(0, 160, 10),
-                     labels = comma_format(accuracy = 1)) +
+  xlab("") + 
+  ggtitle(label = "7-day average daily cases") + 
+  scale_x_date(labels = date_format(format = "%b %Y")) + 
+  #scale_y_continuous(breaks = seq(0, 160, 10),
+#                     labels = comma_format(accuracy = 1)) +
   scale_colour_manual(values = c("Children aged 0 to 9" = "firebrick", 
                                  "Children & young adults aged 10 to 19" = "orange", 
                                  "Adults aged 20+" = "cornflowerblue"), 
@@ -162,16 +162,15 @@ chart_nz_delta_l3_kids_per_adult <- dat_nz_delta_l3_kids_total |>
   pivot_wider(names_from = age_group_2, values_from = rolling_mean) |> 
   clean_names() |> 
   mutate(child_adult_ratio = children_aged_0_to_9 / adults_aged_20) |> 
-  ggplot(mapping = aes(x = outbreak_day, 
+  ggplot(mapping = aes(x = report_date, 
                        y = child_adult_ratio)) + 
   geom_line(size = 0.75, colour = "firebrick4") + 
-  xlab("Outbreak day since Auckland AL3") + 
+  xlab("") + 
   ylab("Average daily\nnumber of\ncases reported") + 
-  ggtitle(label = "Delta outbreak 7-day average daily cases") + 
-  scale_x_continuous(breaks = seq(0, 200, 10)) + 
-  # scale_y_continuous(breaks = seq(0, 60, 10),
-  #                    limits = c(0, 60), 
-  #                    labels = comma_format(accuracy = 1)) +
+  ggtitle(label = "Ratio of 7-day average daily cases for children aged 0-9 vs adults aged 20+") + 
+  scale_x_date(labels = date_format("%b %Y")) + 
+  scale_y_continuous(limits = c(0, 0.6), 
+                     breaks = seq(0, 1, 0.1)) + 
   theme_minimal(base_family = "Fira Sans") + 
   theme(panel.grid.minor = element_blank(), 
         panel.grid.major = element_line(size = 0.2), 
