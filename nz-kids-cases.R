@@ -9,7 +9,7 @@ library(janitor)
 library(scales)
 library(RcppRoll)
 
-dat <- read_csv(file = here("data/covid_cases_2021-12-08.csv"), 
+dat <- read_csv(file = here("data/covid_cases_2022-02-15.csv"), 
                 col_types = "Dcccccc") |> 
   clean_names()
 
