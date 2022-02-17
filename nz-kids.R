@@ -298,7 +298,7 @@ chart_cases_by_age_dhb_day <- dat_combined |>
         axis.text.x = element_text(size = rel(0.95)), 
         plot.caption = element_text(face = "italic"), 
         plot.title = element_text(size = rel(1.5), 
-                                  margin = margin(0, 0, 12, 0, "pt")), 
+                                  margin = margin(0, 0, 8, 0, "pt")), 
         plot.margin = margin(4, 4, 4, 0, "pt"))
 
 ggsave(filename = here("outputs/kids/cases_per_100k.png"), 
