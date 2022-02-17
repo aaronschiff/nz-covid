@@ -1,6 +1,7 @@
-# Number of child cases in NZ
+# Covid and kids in NZ -- vaccination and cases since start of 2022
 
-# Data source: https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
+# *****************************************************************************
+# Setup ----
 
 library(tidyverse)
 library(here)
@@ -9,9 +10,30 @@ library(janitor)
 library(scales)
 library(RcppRoll)
 
-dat <- read_csv(file = here("data/covid_cases_2022-02-15.csv"), 
+# *****************************************************************************
+
+
+# *****************************************************************************
+# Load data ---- 
+
+# Data source: https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
+dat <- read_csv(file = here("data/covid_cases_2022-02-17.csv"), 
                 col_types = "Dcccccc") |> 
-  clean_names()
+  clean_names() |> 
+  mutate(age_group_2 = case_when(
+    age_group == "0 to 9" ~ "0 to 9", 
+    age_group == "10 to 19" ~ "10 to 19", 
+    age_group == "20 to 29" ~ "20 to 29", 
+    age_group == "30 to 39" ~ "30 to 59", 
+    age_group == "40 to 49" ~ "30 to 59", 
+    age_group == "50 to 59" ~ "30 to 59", 
+    age_group == "60 to 69" ~ "60+", 
+    age_group == "70 to 79" ~ "60+", 
+    age_group == "80 to 89" ~ "60+", 
+    age_group == "90+" ~ "60+"
+  )) |> 
+  filter(dhb != "Managed Isolation & Quarantine") |> 
+  filter(report_date >= ymd("2022-01-01"))
 
 dat_nz_delta_l3_kids <- dat |> 
   mutate(age_group_2 = case_when(
