@@ -10,7 +10,9 @@ library(janitor)
 library(scales)
 library(ragg)
 library(systemfonts)
+library(glue)
 
+latest_data <- "2022-02-20"
 start_date <- ymd("2022-01-18")
 include_dhbs <- c("Auckland", 
                   "Waitematā", 
@@ -95,7 +97,7 @@ register_font(
 
 # Cases
 # Data source: https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
-dat_cases <- read_csv(file = here("data/covid_cases_2022-02-17.csv"), 
+dat_cases <- read_csv(file = here(glue("data/covid_cases_{latest_data}.csv")), 
                       col_types = "Dcccccc") |> 
   clean_names() |> 
   mutate(age_group_2 = case_when(
