@@ -247,7 +247,7 @@ max_mean_daily_new_cases_per_5m <- scale_max_val(d = dat_chart,
 
 max_mean_total_cases_per_5m <- scale_max_val(d = dat_chart, 
                                              m = measures$measure_label[2], 
-                                             u = 250000)
+                                             u = 250000) + 50000
 
 max_mean_daily_new_deaths_per_5m <- scale_max_val(d = dat_chart, 
                                                   m = measures$measure_label[3], 

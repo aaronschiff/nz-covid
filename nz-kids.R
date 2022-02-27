@@ -12,13 +12,35 @@ library(ragg)
 library(systemfonts)
 library(glue)
 
-latest_data <- "2022-02-20"
+latest_data <- "2022-02-24"
 start_date <- ymd("2022-01-18")
 include_dhbs <- c("Auckland", 
                   "Waitematā", 
                   "Counties Manukau", 
                   "Waikato", 
-                  "Northland")
+                  "Lakes", 
+                  "Nelson Marlborough", 
+                  "Southern")
+all_dhbs <- c("Northland", 
+              "Auckland", 
+              "Waitematā", 
+              "Counties Manukau", 
+              "Waikato", 
+              "Bay of Plenty", 
+              "Taranaki", 
+              "Lakes", 
+              "Tairāwhiti", 
+              "Whanganui", 
+              "MidCentral", 
+              "Hawke's Bay", 
+              "Capital & Coast", 
+              "Hutt Valley", 
+              "Wairarapa", 
+              "Nelson Marlborough", 
+              "West Coast", 
+              "Canterbury", 
+              "South Canterbury", 
+              "Southern")
 
 # *****************************************************************************
 
@@ -97,7 +119,7 @@ register_font(
 
 # Cases
 # Data source: https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
-dat_cases <- read_csv(file = here(glue("data/covid_cases_{latest_data}.csv")), 
+dat_cases <- read_csv(file = here(glue("data/covid_cases_{latest_data}_0.csv")), 
                       col_types = "Dcccccc") |> 
   clean_names() |> 
   mutate(age_group_2 = case_when(
@@ -183,20 +205,34 @@ dat_pop <- read_csv(file = here("data/Population_Estimated_population_by_sex_age
 dat_cases_by_age_dhb_date <- dat_cases |> 
   count(dhb, age_group_2, report_date) |> 
   complete(dhb, age_group_2, report_date, fill = list(n = 0L)) |> 
-  filter(dhb %in% include_dhbs) |> 
+  filter(dhb != "All DHB areas") |> 
   left_join(y = dat_pop, by = c("dhb", "age_group_2")) |> 
   mutate(rate = n / (pop / 100000)) |> 
   arrange(dhb, age_group_2, report_date) |> 
   group_by(dhb, age_group_2) |>
   mutate(t = row_number()) |> 
+  ungroup()
+
+# Find top DHBs
+dhbs_top <- dat_cases_by_age_dhb_date |> 
+  group_by(age_group_2) |> 
+  slice_max(order_by = rate, n = 1) |> 
   ungroup() |> 
+  select(dhb) |> 
+  distinct() |> 
+  pull(dhb)
+
+# Filter and smooth for selected DHBs
+dat_cases_by_age_dhb_date_selected <- dat_cases_by_age_dhb_date |> 
+  filter(dhb %in% include_dhbs) |> 
   nest_by(dhb, age_group_2) |> 
   mutate(gam_m = list(mgcv::gam(formula = rate ~ s(t, bs = "cs"), 
                                 data = data))) |> 
   mutate(rate_smoothed = list(predict(gam_m))) |> 
   select(-gam_m) |> 
   unnest(cols = c(data, rate_smoothed)) |> 
-  ungroup() 
+  ungroup() |> 
+  mutate(rate_smoothed = ifelse(rate_smoothed < 0, 0, rate_smoothed))
 
 # Cases by age group and date for all DHBs
 dat_cases_by_age_date <- dat_cases_by_age_dhb_date |> 
@@ -218,7 +254,7 @@ dat_cases_by_age_date <- dat_cases_by_age_dhb_date |>
 
 # Combined
 dat_combined <- bind_rows(
-  dat_cases_by_age_dhb_date, 
+  dat_cases_by_age_dhb_date_selected, 
   dat_cases_by_age_date
 )
 
@@ -306,7 +342,7 @@ chart_cases_by_age_dhb_day <- dat_combined |>
 ggsave(filename = here("outputs/kids/cases_per_100k.png"), 
        plot = chart_cases_by_age_dhb_day, 
        width = 2400, 
-       height = 1700, 
+       height = 2400, 
        units = "px", 
        device = agg_png, 
        bg = "white")
