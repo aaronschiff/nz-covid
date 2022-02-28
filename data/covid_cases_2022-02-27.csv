@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="shortcut icon" href="/sites/all/themes/mohpub_bootstrap/favicon.ico" type="image/vnd.microsoft.icon"/>
+    <title>You are forbidden access to this page | Ministry of Health NZ</title>
+    <style>@import url("/modules/system/system.base.css");</style>
+    <style>@import url("/sites/all/themes/mohpub_bootstrap/fontawesome/css/fontawesome.min.css");</style>
+    <style>@import url("/sites/all/themes/mohpub_bootstrap/fontawesome/css/solid.min.css");</style>
+    <style>@import url("/sites/all/themes/mohpub_bootstrap/fontawesome/css/brands.min.css");</style>
+    <style>@import url("/sites/all/themes/mohpub_bootstrap/css/style.css");</style>
+    <style>@import url("/sites/all/themes/mohpub_bootstrap/css/responsive-tables.css");</style>
+    <style media="print">@import url("/sites/all/themes/mohpub_bootstrap/css/print.css");</style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write("<script src='/sites/all/modules/contrib/jquery_update/replace/jquery/1.7/jquery.min.js'>\x3C/script>")</script>
+    <script src="/misc/jquery.once.js?v=1.2"></script>
+    <script src="/misc/drupal.js"></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,"script","//www.google-analytics.com/analytics.js","ga");
+        ga("create", "UA-3573389-24");
+        ga("send", "pageview", '/403.html?page='+ document.location.pathname + document.location.search +'&from=' + document.referrer);
+    </script>
+    <script src="/sites/all/themes/mohpub_bootstrap/js/assets/ios-fix.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/affix.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/alert.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/button.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/carousel.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/collapse.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/dropdown.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/modal.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/tooltip.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/popover.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/scrollspy.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/tab.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/bootstrap/js/transition.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/js/jquery.cookie.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/js/jquery.moh.announcement.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/js/svgeezy.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/js/fitvids.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/js/bootstrap-tabcollapse.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/js/jquery.scrollTo.min.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/js/script.js"></script>
+    <!-- HTML5 element support for IE6-8 -->
+    <!--[if lt IE 9]>
+    <script src="/sites/all/themes/mohpub_bootstrap/js/assets/html5shiv.js"></script>
+    <script src="/sites/all/themes/mohpub_bootstrap/js/assets/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body class="html not-front not-logged-in no-sidebars page-node">
+<!--googleoff: all-->
+<div id="skip-link">
+    <a href="#skip-content" id="skipper" class="element-invisible element-focusable">Skip to main content</a>
+</div>
+<div id="page">
+<header id="navbar" role="banner" class="navbar container navbar-default">
+<ul class="menu nav navbar-nav secondary">
+    <li class="first leaf jobs depth-1">
+        <a href="https://careers.health.govt.nz" title="">Jobs</a>
+    </li>
+    <li class="leaf news depth-1 same-level-as-node">
+        <a data-is-top-level="0" href="/news-media" title="">News</a>
+    </li>
+    <li class="leaf contact-us depth-1 same-level-as-node">
+        <a href="/about-ministry/contact-us" title="">Contact us</a>
+    </li>
+    <li class="leaf facebook depth-1 same-level-as-node">
+        <a data-is-top-level="0" href="https://www.facebook.com/minhealthnz/" title="">Facebook</a>
+    </li>
+    <li class="leaf twitter depth-1 same-level-as-node">
+        <a data-is-top-level="0" href="https://twitter.com/minhealthnz" title="">Twitter</a>
+    </li>
+    <li class="last leaf youtube depth-1 same-level-as-node">
+        <a data-is-top-level="0" href="https://www.youtube.com/user/minhealthnz" title="">Youtube</a>
+    </li>
+</ul>
+<div class="container">
+<div class="navbar-header">
+    <a class="logo navbar-btn pull-left" href="/" title="Home">
+        <img src="/sites/all/themes/mohpub_bootstrap/images/mohlogo.svg" alt="Home"/>
+    </a>
+
+    <div class="region region-header-top">
+        <section id="block-apachesolr-panels-search-form" class="block block-apachesolr-panels clearfix">
+            <form action="/about-ministry" method="post" id="apachesolr-panels-search-block" accept-charset="UTF-8">
+                <div>
+                    <div class="form-type-textfield form-item-apachesolr-panels-search-form form-item form-group">
+                        <label class="element-invisible" for="edit-apachesolr-panels-search-form">Search </label>
+                        <input title="Enter the terms you wish to search for." class="form-control form-text"
+                               data-toggle="tooltip" type="text" id="edit-apachesolr-panels-search-form"
+                               name="apachesolr_panels_search_form" value="" size="15" maxlength="128"/>
+                    </div>
+                    <input type="hidden" name="form_build_id" value="form-Cv6Km17Z9A_Jy5-3Rd-FbPiVIv1gEZxnHeNnxi7txJ0"/>
+                    <input type="hidden" name="form_id" value="apachesolr_panels_search_block"/>
+
+                    <div class="form-actions form-wrapper form-group" id="edit-actions">
+                        <button id="edit-submit" name="op" value="Search" type="submit"
+                                class="btn btn-primary form-submit">Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+        <!-- /.block -->
+    </div>
+    <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="menu-text">Menu</span><span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+
+    </button>
+</div>
+
+<div class="navbar-collapse collapse">
+<nav role="navigation">
+<h2 class="element-invisible">Main menu</h2>
+    <ul id="main-menu" class="menu nav navbar-nav yamm navbar" role="navigation">
+        <li class="first dropdown"><a href="/your-health">Your health <b class="caret"></b></a>
+        </li>
+        <li class="dropdown"><a href="/new-zealand-health-system">NZ health system <b class="caret"></b></a>
+        </li>
+        <li class="dropdown"><a href="/our-work">Our work <b
+                class="caret"></b></a>
+        </li>
+        <li class="dropdown"><a href="/nz-health-statistics">Health
+            statistics <b class="caret"></b></a>
+        </li>
+        <li><a href="/publications">Publications</a></li>
+        <li><a href="/about-ministry">About us</a></li>
+        <li class="visible-xs"><a href="/about-ministry/contact-us">Contact us</a></li>
+    </ul>
+</nav>
+</div>
+</div>
+</header>
+
+<div class="main-container container">
+
+    <div class="row">
+        <section class="col-sm-12">
+            <a id="main-content"></a>
+
+            <div class="breadcrumbs">
+                <a href="/">Home</a>
+            </div>
+            <div class="region region-content">
+                <section id="block-system-main" class="block block-system clearfix">
+                    <div>
+                        <h3>Sorry - you don’t have permission to access this page on our server.</h3>
+                        <p>What you can try:</p>
+                        <ul>
+                            <li>Go to the <a href="https://www.health.govt.nz">www.health.govt.nz</a> homepage and look for accessible links to the information you are looking for.</li>
+                            <li>Use the search box to look for the accessible information you want.</li>
+                        </ul>
+                        <p>HTTP 403 &ndash; Error: Forbidden page</p>
+                        <p>If your user account has access to this page, please <strong><a href="/user" style="text-decoration: underline;" class="access-denied-link">login now</a></strong>.</p>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </div>
+
+    <div id="content-footer-wrapper" class="clearfix">
+        <div id="content-footer" class="clearfix">
+            <div class="region region-content-footer">
+                <section id="block-moh-tools-page-tools" class="block block-moh-tools clearfix">
+                    <a href="#" title="print this page" class="print"><i class="fa fa-print"></i> Print</a>
+                    <a href="/feedback?ref=403%20Error%20page" title="Feedback" class="rss"><i
+                            class="fa fa-comment"></i> Feedback</a>
+                </section>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer class="footer container">
+    <div class="footer-default">
+        <div class="row">
+            <div class="col-sm-6 col-md-6">
+                <div class="field field-name-field-tax-first-column-links field-type-link-field field-label-hidden">
+                  <div class="field-items">
+                      <div class="field-item even">
+                          <a href="/about-site">About this site</a>
+                      </div>
+                      <div class="field-item odd">
+                          <a href="/about-ministry/contact-us">Contact us</a>
+                      </div>
+                      <div class="field-item even">
+                          <a href="/about-ministry/ministry-health-websites">Other ministry of health websites</a>
+                      </div>
+                      <div class="field-item odd">
+                        <a href="/about-ministry/contact-us/official-information-act-requests">Official Information Act requests</a>
+                      </div>
+                  </div>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <div class="field field-name-field-tax-footer-body field-type-text-long field-label-hidden">
+                    <div class="field-items">
+                        <div class="field-item even">
+                            <h3>Where to go for help</h3>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>Emergencies</td>
+                                        <td><strong>Dial <a href="tel:111">111</a></strong>&nbsp;(for ambulance, fire or police)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Healthline</td>
+                                        <td><strong>Dial <a href="tel:0800%20611%20116">0800 611 116</a></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Poisons</td>
+                                        <td>
+                                            <strong>Dial <a href="tel:0800%20764%20766">0800 POISON</a>&nbsp;</strong>(<a href="tel:0800%20764%20766">0800 764 766</a>)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Mental health crisis</td>
+                                        <td><strong><a href="/your-health/services-and-support/health-care-services/mental-health-services/crisis-assessment-teams">Emergency contact numbers</a></strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="sub-footer">
+                <div class="column col-sm-12 col-md-3">
+                    <a href="https://www.govt.nz/"><img alt="govt.nz - connecting you to New Zealand central &amp; local government services" height="52" src="/sites/all/themes/mohpub_bootstrap/images/nzgovtlogo-te-kawanatanga-white.png" title="govt.nz - connecting you to New Zealand central &amp; local government services" width="230"></a>
+                </div>
+                <div class="column col-sm-12 col-md-9">
+                    <span class="bottom-menu-moh">&copy; Ministry of Health – Manatū Hauora</span> <span class="v-divider first">|</span> <a class="bottom-menu-link" href="/sitemap">Site map</a> <span class="v-divider">|</span> <a class="bottom-menu-link" href="/about-site/privacy-and-security">Privacy &amp; security</a> <span class="v-divider">|</span> <a class="bottom-menu-link" href="/about-site/copyright">Copyright</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-print">
+        &copy; Ministry of Health – Manatū Hauora
+    </div>
+</footer>
+<a class="scrollToTop">Back to top <i class="fa fa-arrow-up"></i></a>
+</div>
+</body>
+</html>

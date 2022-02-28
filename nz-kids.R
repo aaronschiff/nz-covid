@@ -12,14 +12,17 @@ library(ragg)
 library(systemfonts)
 library(glue)
 
-latest_data <- "2022-02-24"
+latest_date <- "2022-02-28"
+latest_date_nice <- "28 February 2022"
 start_date <- ymd("2022-01-18")
 include_dhbs <- c("Auckland", 
                   "Waitematā", 
                   "Counties Manukau", 
                   "Waikato", 
                   "Lakes", 
+                  "Capital & Coast", 
                   "Nelson Marlborough", 
+                  "Canterbury", 
                   "Southern")
 all_dhbs <- c("Northland", 
               "Auckland", 
@@ -119,7 +122,10 @@ register_font(
 
 # Cases
 # Data source: https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
-dat_cases <- read_csv(file = here(glue("data/covid_cases_{latest_data}_0.csv")), 
+dat_cases_dl <- download.file(url = glue("https://www.health.govt.nz/system/files/documents/pages/covid_cases_{latest_date}.csv"), 
+                             destfile = here(glue("data/covid_cases_{latest_date}.csv")))
+
+dat_cases <- read_csv(file = here(glue("data/covid_cases_{latest_date}.csv")), 
                       col_types = "Dcccccc") |> 
   clean_names() |> 
   mutate(age_group_2 = case_when(
@@ -323,7 +329,7 @@ chart_cases_by_age_dhb_day <- dat_combined |>
                       guide = "none") + 
   labs(x = "", 
        y = "", 
-       title = "Daily COVID-19 cases per 100,000 people", 
+       title = glue("Daily COVID-19 cases per 100,000 people to {latest_date_nice}"), 
        caption = "Chart by Aaron Schiff using cases data from the NZ Ministry of Health and population data from Stats NZ. CC-BY 4.0. schiff.nz/covid/kids") + 
   theme_minimal(base_family = "National 2 Custom", 
                 base_size = 7) + 
@@ -341,8 +347,8 @@ chart_cases_by_age_dhb_day <- dat_combined |>
 
 ggsave(filename = here("outputs/kids/cases_per_100k.png"), 
        plot = chart_cases_by_age_dhb_day, 
-       width = 2400, 
-       height = 2400, 
+       width = 2600, 
+       height = 3000, 
        units = "px", 
        device = agg_png, 
        bg = "white")
