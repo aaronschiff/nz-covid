@@ -321,7 +321,7 @@ chart_cases_by_age_dhb_day <- dat_combined |>
   scale_x_date(breaks = seq(from = start_date, 
                             to = start_date + dweeks(52), 
                             by = "7 days"), 
-               labels = date_format("%b %d"), 
+               labels = date_format("%b\n%d"), 
                limits = c(start_date, max(dat_combined$report_date) + ddays(1)), 
                expand = expansion(0, 0)) + 
   scale_colour_manual(values = c("0 to 9 years old" = "#4053d3", 
@@ -340,7 +340,7 @@ chart_cases_by_age_dhb_day <- dat_combined |>
   theme(panel.grid.minor = element_blank(), 
         panel.grid.major = element_line(size = 0.15, colour = grey(0.9)), 
         panel.spacing.y = unit(12, "pt"), 
-        panel.spacing.x = unit(24, "pt"), 
+        panel.spacing.x = unit(12, "pt"), 
         strip.text.y = element_text(face = "bold", angle = 0, hjust = 0), 
         strip.text.x = element_blank(), 
         axis.text.x = element_text(size = rel(0.95)), 
