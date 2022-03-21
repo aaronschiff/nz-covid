@@ -14,8 +14,8 @@ library(glue)
 library(RcppRoll)
 library(lemon)
 
-latest_date <- "2022-03-15"
-latest_date_nice <- "15 March 2022"
+latest_date <- "2022-03-21"
+latest_date_nice <- "21 March 2022"
 start_date <- ymd("2022-01-08")
 include_dhbs <- c("Auckland", 
                   "Waitematā", 
@@ -124,7 +124,7 @@ register_font(
 
 # Cases
 # Data source: https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
-dat_cases_dl <- download.file(url = glue("https://www.health.govt.nz/system/files/documents/pages/covid_cases_{latest_date}.csv"), 
+dat_cases_dl <- download.file(url = "https://github.com/minhealthnz/nz-covid-data/raw/main/cases/covid-cases.csv", 
                               destfile = here(glue("data/covid_cases_{latest_date}.csv")))
 
 dat_cases <- read_csv(file = here(glue("data/covid_cases_{latest_date}.csv")), 
@@ -234,7 +234,7 @@ dhbs_top <- dat_cases_by_age_dhb_date |>
 
 # Filter and smooth for selected DHBs
 dat_cases_by_age_dhb_date_selected <- dat_cases_by_age_dhb_date |> 
-  filter(dhb %in% include_dhbs) |> 
+  #filter(dhb %in% include_dhbs) |> 
   nest_by(dhb, age_group_2) |> 
   mutate(gam_m = list(mgcv::gam(formula = rate ~ s(t, bs = "cs"), 
                                 data = data))) |> 
@@ -277,7 +277,7 @@ dat_combined <- bind_rows(
 # Age group labels so they can be coloured
 dat_age_labels <- tibble(
   x = median(dat_combined$report_date), 
-  y = max(dat_combined$rate), 
+  y = 1500, 
   age_group_2 = c("0 to 9", 
                   "10 to 19", 
                   "20 to 29", 
@@ -302,7 +302,7 @@ chart_cases_by_age_dhb_day <- dat_combined |>
                           y = rate_smoothed, 
                           group = line_group), 
             colour = grey(0.65), 
-            size = 0.25, 
+            size = 0.15, 
             data = dat_combined |> 
               mutate(line_group = paste(dhb, age_group_2)) |> 
               select(-age_group_2)) + 
@@ -311,11 +311,11 @@ chart_cases_by_age_dhb_day <- dat_combined |>
                            fill = age_group_2), 
              shape = 21, 
              stroke = 0, 
-             size = 0.7) + 
+             size = 0.5) + 
   geom_line(mapping = aes(x = report_date, 
                           y = rate_smoothed, 
                           colour = age_group_2), 
-            size = 0.4) + 
+            size = 0.3) + 
   facet_grid(rows = vars(dhb), 
              cols = vars(age_group_2)) + 
   scale_x_date(breaks = seq(from = start_date, 
@@ -341,7 +341,7 @@ chart_cases_by_age_dhb_day <- dat_combined |>
         panel.grid.major = element_line(size = 0.15, colour = grey(0.9)), 
         panel.spacing.y = unit(12, "pt"), 
         panel.spacing.x = unit(24, "pt"), 
-        strip.text.y = element_text(face = "bold"), 
+        strip.text.y = element_text(face = "bold", angle = 0, hjust = 0), 
         strip.text.x = element_blank(), 
         axis.text.x = element_text(size = rel(0.95)), 
         plot.caption = element_text(face = "italic"), 
@@ -352,7 +352,7 @@ chart_cases_by_age_dhb_day <- dat_combined |>
 ggsave(filename = here("outputs/kids/cases_per_100k.png"), 
        plot = chart_cases_by_age_dhb_day, 
        width = 2600, 
-       height = 3000, 
+       height = 4000, 
        units = "px", 
        device = agg_png, 
        bg = "white")
