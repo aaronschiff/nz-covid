@@ -11,10 +11,12 @@ library(scales)
 library(ragg)
 library(systemfonts)
 library(glue)
+library(RcppRoll)
+library(lemon)
 
-latest_date <- "2022-02-28"
-latest_date_nice <- "28 February 2022"
-start_date <- ymd("2022-01-18")
+latest_date <- "2022-03-15"
+latest_date_nice <- "15 March 2022"
+start_date <- ymd("2022-01-08")
 include_dhbs <- c("Auckland", 
                   "Waitematā", 
                   "Counties Manukau", 
@@ -123,11 +125,13 @@ register_font(
 # Cases
 # Data source: https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-case-demographics
 dat_cases_dl <- download.file(url = glue("https://www.health.govt.nz/system/files/documents/pages/covid_cases_{latest_date}.csv"), 
-                             destfile = here(glue("data/covid_cases_{latest_date}.csv")))
+                              destfile = here(glue("data/covid_cases_{latest_date}.csv")))
 
 dat_cases <- read_csv(file = here(glue("data/covid_cases_{latest_date}.csv")), 
                       col_types = "Dcccccc") |> 
   clean_names() |> 
+  filter(report_date != max(report_date)) |>     # Exclude last day as it is often incomplete
+  filter(age_group != "Unknown") |> 
   mutate(age_group_2 = case_when(
     age_group == "0 to 9" ~ "0 to 9", 
     age_group == "10 to 19" ~ "10 to 19", 
@@ -222,7 +226,7 @@ dat_cases_by_age_dhb_date <- dat_cases |>
 # Find top DHBs
 dhbs_top <- dat_cases_by_age_dhb_date |> 
   group_by(age_group_2) |> 
-  slice_max(order_by = rate, n = 1) |> 
+  slice_max(order_by = rate, n = 5) |> 
   ungroup() |> 
   select(dhb) |> 
   distinct() |> 
@@ -354,4 +358,139 @@ ggsave(filename = here("outputs/kids/cases_per_100k.png"),
        bg = "white")
 
 # *****************************************************************************
-  
+
+
+# *****************************************************************************
+# Scratch ----
+
+# Total NZ cases by DHB
+dat_cases_by_dhb_date <- dat_cases_by_age_dhb_date |> 
+  group_by(dhb, report_date) |> 
+  summarise(n = sum(n), pop = sum(pop)) |> 
+  ungroup() |> 
+  arrange(dhb, report_date) |> 
+  mutate(rate = n / (pop / 100000)) |> 
+  group_by(dhb) |> 
+  mutate(t = row_number()) |> 
+  ungroup() |> 
+  nest_by(dhb) |> 
+  mutate(m_gam = list(mgcv::gam(formula = rate ~ s(t, bs = "cs"),
+                            data = data))) |>
+  mutate(rate_smoothed_gam = list(predict(m_gam))) |> 
+  select(-m_gam) |> 
+  unnest(cols = c(data, rate_smoothed_gam)) |> 
+  ungroup() |> 
+  mutate(rate_smoothed_gam = ifelse(rate_smoothed_gam < 0, 0, rate_smoothed_gam))
+
+dat_cases_by_dhb_date |>
+  filter(report_date >= ymd("2022-02-01")) |> 
+  ggplot(mapping = aes(x = report_date,
+                       y = rate)) + 
+  geom_point(size = 1, 
+             colour = "black") + 
+  geom_line(mapping = aes(y = rate_smoothed_gam), size = 1) + 
+  facet_wrap(facets = vars(dhb), ncol = 3) + 
+  scale_x_date(limits = c(ymd("2022-02-01"), NA), 
+               breaks = seq(from = ymd("2022-02-01"), 
+                            by = "1 week", 
+                            length.out = 52), 
+               labels = date_format(format = "%d\n%b")) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Cases per 100,000 people by DHB") + 
+  theme_minimal(base_size = 32) + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major = element_line(size = 0.25))
+
+# Total NZ cases by age group
+dat_cases_by_age_date <- dat_cases_by_age_dhb_date |> 
+  group_by(age_group_2, report_date) |> 
+  summarise(n = sum(n), pop = sum(pop)) |> 
+  ungroup() |> 
+  arrange(age_group_2, report_date) |> 
+  mutate(rate = n / (pop / 100000)) |> 
+  group_by(age_group_2) |> 
+  mutate(t = row_number()) |> 
+  ungroup() |> 
+  nest_by(age_group_2) |> 
+  mutate(m_gam = list(mgcv::gam(formula = rate ~ s(t, bs = "cs"),
+                                data = data))) |>
+  mutate(rate_smoothed_gam = list(predict(m_gam))) |> 
+  select(-m_gam) |> 
+  unnest(cols = c(data, rate_smoothed_gam)) |> 
+  ungroup() |> 
+  mutate(rate_smoothed_gam = ifelse(rate_smoothed_gam < 0, 0, rate_smoothed_gam))
+
+dat_cases_by_age_date |>
+  filter(report_date >= ymd("2022-02-01")) |> 
+  ggplot(mapping = aes(x = report_date,
+                       y = rate)) + 
+  geom_point(size = 1, 
+             colour = "black") + 
+  geom_line(mapping = aes(y = rate_smoothed_gam), size = 1) + 
+  facet_wrap(facets = vars(age_group_2), ncol = 3) + 
+  scale_x_date(limits = c(ymd("2022-02-01"), NA), 
+               breaks = seq(from = ymd("2022-02-01"), 
+                            by = "1 week", 
+                            length.out = 52), 
+               labels = date_format(format = "%d\n%b")) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Cases per 100,000 people by age group") + 
+  theme_minimal(base_size = 32) + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major = element_line(size = 0.25))
+
+# Tryna do a chart for TPM
+dat_cases_by_age_date <- dat_cases |> 
+  mutate(age_group_2 = case_when(
+    age_group == "0 to 9" ~ "0 to 9", 
+    age_group == "10 to 19" ~ "10 to 19", 
+    age_group == "20 to 29" ~ "20 to 29", 
+    age_group == "30 to 39" ~ "30 to 39", 
+    age_group == "40 to 49" ~ "40 to 49", 
+    age_group == "50 to 59" ~ "50 to 59", 
+    age_group == "60 to 69" ~ "60 to 69", 
+    age_group == "70 to 79" ~ "70+", 
+    age_group == "80 to 89" ~ "70+", 
+    age_group == "90+" ~ "70+"
+  )) |>
+  count(age_group_2, report_date) |> 
+  complete(age_group_2, report_date, fill = list(n = 0L)) |> 
+  arrange(age_group_2, report_date) |> 
+  group_by(age_group_2) |>
+  mutate(mean_n = roll_mean(x = n, n = 7L, align = "right", fill = NA_real_)) |> 
+  group_by(report_date) |> 
+  mutate(pct_mean_n = mean_n / sum(mean_n)) |> 
+  ungroup()
+
+chart <- dat_cases_by_age_date |> 
+  ggplot(mapping = aes(x = report_date, 
+                       y = pct_mean_n)) + 
+  geom_col(fill = "cornflowerblue") + 
+  scale_y_continuous(limits = c(0, 0.3), 
+                     breaks = seq(0, 0.3, 0.05), 
+                     labels = percent_format(accuracy = 1), 
+                     expand = expansion(0, 0)) + 
+  scale_x_date(expand = expansion(0, 0)) + 
+  xlab("") + 
+  ylab("") + 
+  facet_rep_wrap(facets = vars(fct_rev(age_group_2)), 
+                 ncol = 1, 
+                 repeat.tick.labels = TRUE) + 
+  theme_minimal(base_family = "National 2 Custom", 
+                base_size = 8) + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major = element_line(size = 0.15, colour = grey(0.9)), 
+        panel.spacing.y = unit(6, "pt"), 
+        strip.text = element_text(face = "bold"), 
+        plot.margin = margin(4, 4, 4, 0, "pt"))
+
+ggsave(filename = here("outputs/kids/muppet.png"), 
+       plot = chart, 
+       width = 1800, 
+       height = 2400, 
+       units = "px", 
+       device = agg_png, 
+       bg = "white")
+# *****************************************************************************

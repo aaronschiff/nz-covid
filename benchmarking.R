@@ -120,6 +120,7 @@ dat_bench_14days <- dat_countries |>
                      new_cases, new_deaths, new_tests_smoothed, 
                      reproduction_rate, 
                      people_fully_vaccinated, 
+                     total_boosters, 
                      stringency_index, 
                      population), 
             by = c("owd_country" = "location")) |> 
@@ -132,6 +133,7 @@ dat_bench_14days <- dat_countries |>
          tests_valid = ifelse(is.na(new_tests_smoothed), 0L, 1L), 
          reproduction_rate_valid = ifelse(is.na(reproduction_rate), 0L, 1L), 
          vax_valid = ifelse(is.na(people_fully_vaccinated), 0L, 1L),
+         boost_valid = ifelse(is.na(total_boosters), 0L, 1L), 
          stringency_valid = ifelse(is.na(stringency_index), 0L, 1L)) |> 
   summarise(total_cases = sum(new_cases, na.rm = TRUE), 
             total_cases_n = sum(cases_valid), 
@@ -141,6 +143,7 @@ dat_bench_14days <- dat_countries |>
             total_deaths_n = sum(deaths_valid), 
             latest_reproduction_rate = most_recent_numeric(reproduction_rate), 
             max_vax = most_recent_numeric(people_fully_vaccinated), 
+            max_boost = most_recent_numeric(total_boosters), 
             total_vax_n = sum(vax_valid), 
             mean_stringency = mean(stringency_index, na.rm = TRUE), 
             total_stringency_n = sum(stringency_valid), 
@@ -150,6 +153,7 @@ dat_bench_14days <- dat_countries |>
          mean_daily_new_tests_per_5m = mean_tests / (population / 5000000), 
          mean_daily_new_deaths_per_5m = total_deaths / (population / 5000000) / 14, 
          max_vax_rate = 100 * max_vax / population, 
+         max_boost_rate = 100 * max_boost / population, 
          mean_stringency = mean(mean_stringency)) |> 
   ungroup() |> 
   mutate(country_group = case_when(
@@ -197,6 +201,7 @@ measures <- tribble(
   "mean_daily_new_tests_per_5m", "Average daily tests per 5 million people (14-day average)",
   "latest_reproduction_rate", "Estimated effective reproduction rate (most recent data)", 
   "max_vax_rate", "Fully vaccinated proportion of the total population (most recent data)",
+  "max_boost_rate", "Boosted proportion of the total population (most recent data)", 
   "mean_stringency", "Average government response stringency index (14-day average)"
 )
 
@@ -213,6 +218,7 @@ dat_chart <- bind_rows(
            mean_daily_new_tests_per_5m, 
            latest_reproduction_rate, 
            max_vax_rate, 
+           max_boost_rate, 
            mean_stringency) |> 
     pivot_longer(cols = c(-owd_country, -country_group, -country_abbr, -country_area), 
                  names_to = "measure", values_to = "value"), 
@@ -267,6 +273,8 @@ max_latest_reproduction_rate <- scale_max_val(d = dat_chart,
                                               round_digits = 1)
 
 max_max_vax_rate <- 101
+
+max_max_boost_rate <- 101
 
 max_mean_stringency <- 101
 
@@ -327,6 +335,10 @@ chart <- dat_chart |>
                        position = "right"),
     scale_y_continuous(breaks = seq(0, max_max_vax_rate, 5),
                        limits = c(0, max_max_vax_rate),
+                       expand = expansion(0, 0),
+                       position = "right"),
+    scale_y_continuous(breaks = seq(0, max_max_boost_rate, 5),
+                       limits = c(0, max_max_boost_rate),
                        expand = expansion(0, 0),
                        position = "right"),
     scale_y_continuous(breaks = seq(0, max_mean_stringency, 10),
